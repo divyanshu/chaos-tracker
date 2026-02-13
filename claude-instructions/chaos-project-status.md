@@ -12,7 +12,7 @@
 | Phase 2 | Core UI Components | Done |
 | Phase 3 | Supabase Integration (hooks, stores, routing) | Done |
 | Phase 4 | Main Features (kanban, CRUD, rejuvenation) | Done |
-| Phase 5 | Polish & Theming | Not Started |
+| Phase 5 | Retro 90s Restyle + Stacked Layout Toggle | Done |
 | CLI Prototype | Terminal UI with Ink 5 | Done |
 
 ---
@@ -70,14 +70,22 @@
 
 ## What's Next
 
-### Phase 5: Polish & Theming
+### Phase 5: Retro 90s Restyle + Stacked Layout Toggle (Done)
+- [x] 90s muted & cozy color palette (warm cream, dusty rose, sage green, warm taupe, denim blue)
+- [x] Angular design (0.175rem radius, rectangular badges/chips)
+- [x] Muted category colors (denim, sage, taupe, dusty rose, lavender, teal)
+- [x] Muted status badge colors (stone, slate, orange, green with opacity)
+- [x] Muted neglect indicators across TaskCard, TaskDetailView, RejuvenationView
+- [x] Stacked layout mode (vertical category sections with responsive task grid)
+- [x] Layout toggle in FilterBar (Rows3/Columns3 icons, persists to localStorage)
+- [x] Dark mode "cozy evening" palette (deep warm brown + cream)
+
+### Future Polish
 - [ ] Drag-and-drop for task cards between columns
 - [ ] URL-synced filters (persist filter state in query params)
 - [ ] Toast notifications for actions (create, update, delete, touch)
 - [ ] Loading/error states with skeletons
-- [ ] Responsive design (mobile layout)
 - [ ] Accessibility audit (ARIA labels, screen reader support)
-- [ ] Refined visual design and animations
 
 ---
 

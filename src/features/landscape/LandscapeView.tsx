@@ -5,6 +5,7 @@ import { DEFAULT_CATEGORIES } from '@/core/domain'
 import type { Task, TaskStatus } from '@/core/domain'
 import { FilterBar } from './FilterBar'
 import { CategoryColumn } from './CategoryColumn'
+import { StackedCategory } from './StackedCategory'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 
 function LandscapeView() {
@@ -16,6 +17,7 @@ function LandscapeView() {
 
   const filterCategories = useUIStore((s) => s.filterCategories)
   const filterStatuses = useUIStore((s) => s.filterStatuses)
+  const layoutMode = useUIStore((s) => s.layoutMode)
 
   function handleStatusChange(taskId: string, status: TaskStatus) {
     updateTask.mutate({ id: taskId, changes: { status } })
@@ -97,10 +99,27 @@ function LandscapeView() {
     <div className="flex flex-col h-screen">
       <FilterBar />
 
-      <div className="flex-1 overflow-x-auto overflow-y-hidden">
-        <div className="flex gap-4 p-4 h-full min-w-min">
+      {layoutMode === 'kanban' ? (
+        <div className="flex-1 overflow-x-auto overflow-y-hidden">
+          <div className="flex gap-4 p-4 h-full min-w-min">
+            {visibleCategories.map((cat) => (
+              <CategoryColumn
+                key={cat.name}
+                categoryName={cat.name}
+                categoryColor={cat.color}
+                tasks={tasksByCategory.get(cat.name) ?? []}
+                onStatusChange={handleStatusChange}
+                onTouch={handleTouch}
+                onSelectTask={handleSelect}
+                onCreateTask={handleCreate}
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {visibleCategories.map((cat) => (
-            <CategoryColumn
+            <StackedCategory
               key={cat.name}
               categoryName={cat.name}
               categoryColor={cat.color}
@@ -112,7 +131,7 @@ function LandscapeView() {
             />
           ))}
         </div>
-      </div>
+      )}
     </div>
   )
 }

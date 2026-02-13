@@ -104,8 +104,8 @@ function RejuvenationView() {
               key={task.id}
               className={cn(
                 'rounded-lg border bg-card p-3',
-                neglect === 'warning' && 'border-l-2 border-l-amber-400',
-                neglect === 'critical' && 'border-l-2 border-l-red-500',
+                neglect === 'warning' && 'border-l-2 border-l-amber-400/70',
+                neglect === 'critical' && 'border-l-2 border-l-red-400/70',
               )}
             >
               <div className="flex items-center justify-between gap-2 mb-1">

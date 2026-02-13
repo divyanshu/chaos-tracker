@@ -6,10 +6,10 @@ export type Category = {
 }
 
 export const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
-  { name: 'Work', color: '#6366f1', order: 0 },
-  { name: 'Personal', color: '#22c55e', order: 1 },
-  { name: 'Chores', color: '#f59e0b', order: 2 },
-  { name: 'Connection', color: '#ec4899', order: 3 },
-  { name: 'Hobby', color: '#8b5cf6', order: 4 },
-  { name: 'Rejuvenate', color: '#06b6d4', order: 5 },
+  { name: 'Work', color: '#7a8fa6', order: 0 },
+  { name: 'Personal', color: '#a0b89c', order: 1 },
+  { name: 'Chores', color: '#b8a99a', order: 2 },
+  { name: 'Connection', color: '#c4a0a0', order: 3 },
+  { name: 'Hobby', color: '#9a8db8', order: 4 },
+  { name: 'Rejuvenate', color: '#8aada6', order: 5 },
 ]

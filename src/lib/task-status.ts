@@ -5,19 +5,19 @@ export type StatusAction = 'start' | 'pause' | 'resume' | 'complete'
 export const STATUS_DISPLAY: Record<TaskStatus, { label: string; className: string }> = {
   pending: {
     label: 'Not Started',
-    className: 'bg-stone-100 text-stone-700 dark:bg-stone-800 dark:text-stone-300',
+    className: 'bg-stone-200/70 text-stone-600 dark:bg-stone-700/50 dark:text-stone-300',
   },
   in_progress: {
     label: 'In Progress',
-    className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+    className: 'bg-slate-200/70 text-slate-600 dark:bg-slate-700/40 dark:text-slate-300',
   },
   paused: {
     label: 'Paused',
-    className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+    className: 'bg-orange-100/70 text-orange-700/80 dark:bg-orange-900/30 dark:text-orange-300/80',
   },
   completed: {
     label: 'Completed',
-    className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+    className: 'bg-green-100/60 text-green-700/80 dark:bg-green-900/30 dark:text-green-300/70',
   },
 }
 

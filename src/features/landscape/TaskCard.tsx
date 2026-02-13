@@ -49,8 +49,8 @@ export function TaskCard({ task, onStatusChange, onTouch, onSelect }: TaskCardPr
       className={cn(
         'group relative rounded-lg border bg-card p-3 cursor-pointer transition-colors',
         'hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        neglect === 'warning' && 'border-l-2 border-l-amber-400',
-        neglect === 'critical' && 'border-l-2 border-l-red-500',
+        neglect === 'warning' && 'border-l-2 border-l-amber-400/70',
+        neglect === 'critical' && 'border-l-2 border-l-red-400/70',
       )}
     >
       <div className="flex items-start justify-between gap-2">

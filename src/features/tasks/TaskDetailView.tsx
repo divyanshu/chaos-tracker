@@ -261,8 +261,8 @@ function TaskDetailView() {
       {neglect !== 'none' && (
         <div className={cn(
           'text-sm mb-6 px-3 py-2 rounded-md',
-          neglect === 'warning' && 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400',
-          neglect === 'critical' && 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400',
+          neglect === 'warning' && 'bg-amber-50/70 text-amber-700/80 dark:bg-amber-900/20 dark:text-amber-400/70',
+          neglect === 'critical' && 'bg-red-50/70 text-red-700/80 dark:bg-red-900/20 dark:text-red-400/70',
         )}>
           {neglect === 'critical' ? 'Critically neglected' : 'Getting neglected'} — last touched {relativeTime(task.last_touched)}
         </div>

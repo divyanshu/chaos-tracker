@@ -4,7 +4,7 @@ import type { TaskStatus } from '@/core/domain'
 import { useUIStore } from '@/stores/ui-store'
 import { STATUS_DISPLAY } from '@/lib/task-status'
 import { cn } from '@/lib/utils'
-import { Sun, Moon, X, Sparkles } from 'lucide-react'
+import { Sun, Moon, X, Sparkles, Rows3, Columns3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const ALL_STATUSES: TaskStatus[] = ['pending', 'in_progress', 'paused', 'completed']
@@ -13,6 +13,8 @@ export function FilterBar() {
   const {
     theme,
     toggleTheme,
+    layoutMode,
+    toggleLayoutMode,
     filterCategories,
     filterStatuses,
     toggleFilterCategory,
@@ -33,7 +35,7 @@ export function FilterBar() {
               key={cat.name}
               onClick={() => toggleFilterCategory(cat.name)}
               className={cn(
-                'rounded-full px-2.5 py-1 text-xs font-medium transition-all',
+                'rounded-sm px-2.5 py-1 text-xs font-medium transition-all',
                 active
                   ? 'opacity-100'
                   : 'opacity-40 hover:opacity-60',
@@ -61,7 +63,7 @@ export function FilterBar() {
               key={status}
               onClick={() => toggleFilterStatus(status)}
               className={cn(
-                'rounded-full px-2.5 py-1 text-xs font-medium transition-all',
+                'rounded-sm px-2.5 py-1 text-xs font-medium transition-all',
                 display.className,
                 !active && 'opacity-40 hover:opacity-60',
               )}
@@ -89,11 +91,24 @@ export function FilterBar() {
       {/* Right side actions */}
       <Link
         to="/rejuvenate"
-        className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium text-cyan-600 bg-cyan-100/50 hover:bg-cyan-100 dark:text-cyan-400 dark:bg-cyan-900/30 dark:hover:bg-cyan-900/50 transition-colors"
+        className="flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs font-medium text-teal-700/80 bg-teal-100/40 hover:bg-teal-100/60 dark:text-teal-400/80 dark:bg-teal-900/25 dark:hover:bg-teal-900/40 transition-colors"
       >
         <Sparkles className="h-3 w-3" />
         Rejuvenate
       </Link>
+
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={toggleLayoutMode}
+        className="h-8 w-8 p-0"
+      >
+        {layoutMode === 'kanban' ? (
+          <Rows3 className="h-4 w-4" />
+        ) : (
+          <Columns3 className="h-4 w-4" />
+        )}
+      </Button>
 
       <Button
         variant="ghost"
