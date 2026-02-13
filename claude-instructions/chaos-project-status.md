@@ -11,7 +11,7 @@
 | Phase 1 | Project Setup & Foundation | Done |
 | Phase 2 | Core UI Components | Done |
 | Phase 3 | Supabase Integration (hooks, stores, routing) | Done |
-| Phase 4 | Main Features (kanban, CRUD, rejuvenation) | Not Started |
+| Phase 4 | Main Features (kanban, CRUD, rejuvenation) | Done |
 | Phase 5 | Polish & Theming | Not Started |
 | CLI Prototype | Terminal UI with Ink 5 | Done |
 
@@ -19,22 +19,33 @@
 
 ## What's Been Built
 
-### Web Client (Phases 1-3)
+### Web Client (Phases 1-4)
 - Vite + React 18 + TypeScript scaffolding
 - Tailwind CSS + ShadCN UI (Stone theme, dark mode support)
 - `@/*` path alias configured
 - Domain types: `Task`, `TaskStatus`, `Category`
 - Repository pattern: `TaskRepository` interface
 - Supabase implementation: `SupabaseTaskRepository`
-- ShadCN components: Button, Card, Badge, Input
+- ShadCN components: Button, Card, Badge, Input, Dialog, Dropdown Menu, Tooltip, Separator, Textarea, Select, Label
 - TanStack Query v5 hooks with optimistic updates (`useTasks`, `useTask`, `useCreateTask`, `useUpdateTask`, `useDeleteTask`, `useTouchTask`)
 - Query key factory for cache invalidation (`src/hooks/query-keys.ts`)
 - Zustand store for UI state: theme toggle, filters, selected task (`src/stores/ui-store.ts`)
 - React Router v6 with lazy-loaded routes (`/`, `/tasks/:id`, `/rejuvenate`)
-- App shell with `<Outlet />` layout pattern
+- App shell with `<Outlet />` layout + `TooltipProvider`
 - `QueryClientProvider` wrapper with sensible defaults (60s stale, 5min gc, retry 1)
 - Theme init script in `index.html` to prevent flash of unstyled content
-- Placeholder feature views: LandscapeView (fetches real tasks), TaskDetailView, RejuvenationView
+
+#### Phase 4 Features
+- **LandscapeView** — Full kanban board with category columns (horizontally scrolling)
+  - `CategoryColumn` — colored header, task list, quick-create input
+  - `TaskCard` — status badge, neglect indicator (amber warning / red critical), hover quick-action buttons with tooltips
+  - `FilterBar` — category chips, status chips, clear filters, theme toggle, rejuvenation link
+- **TaskDetailView** — View mode (title, status, category, description, metadata, neglect indicator) + Edit mode (form with title, description, category, status selects) + Delete confirmation dialog
+- **RejuvenationView** — Filtered Rejuvenate task list with quick-add, status actions, touch, relative timestamps
+- **Keyboard shortcuts** (`src/hooks/use-keyboard-shortcuts.ts`) — Space toggles status, `t` touches task, Enter selects task (on focused card); Tab/Shift+Tab for navigation
+- **Shared utilities**:
+  - `src/lib/neglect.ts` — `daysSince`, `neglectLevel`, `relativeTime`
+  - `src/lib/task-status.ts` — `STATUS_DISPLAY`, `availableActions`, `nextStatus`, `toggleStatus`, `ACTION_LABELS`
 
 ### CLI Prototype (`cli/`)
 - Ink 5 + @inkjs/ui + chalk 5
@@ -59,14 +70,14 @@
 
 ## What's Next
 
-### Phase 4: Main Features (Web)
-- [ ] LandscapeView — full kanban board with category columns
-- [ ] Task cards with status badges and neglect indicators
-- [ ] Quick status actions (Start, Pause, Resume, Complete, Touch)
-- [ ] Task CRUD (create, edit, delete with confirmation)
-- [ ] Task filtering by category/status
-- [ ] Rejuvenation logging view
-- [ ] Keyboard shortcuts (Enter, Space, Tab, Shift+Tab, t)
+### Phase 5: Polish & Theming
+- [ ] Drag-and-drop for task cards between columns
+- [ ] URL-synced filters (persist filter state in query params)
+- [ ] Toast notifications for actions (create, update, delete, touch)
+- [ ] Loading/error states with skeletons
+- [ ] Responsive design (mobile layout)
+- [ ] Accessibility audit (ARIA labels, screen reader support)
+- [ ] Refined visual design and animations
 
 ---
 
