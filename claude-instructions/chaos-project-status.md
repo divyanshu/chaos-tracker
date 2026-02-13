@@ -10,7 +10,7 @@
 |-------|-------------|--------|
 | Phase 1 | Project Setup & Foundation | Done |
 | Phase 2 | Core UI Components | Done |
-| Phase 3 | Supabase Integration (hooks, stores, routing) | Not Started |
+| Phase 3 | Supabase Integration (hooks, stores, routing) | Done |
 | Phase 4 | Main Features (kanban, CRUD, rejuvenation) | Not Started |
 | Phase 5 | Polish & Theming | Not Started |
 | CLI Prototype | Terminal UI with Ink 5 | Done |
@@ -19,7 +19,7 @@
 
 ## What's Been Built
 
-### Web Client (Phases 1-2)
+### Web Client (Phases 1-3)
 - Vite + React 18 + TypeScript scaffolding
 - Tailwind CSS + ShadCN UI (Stone theme, dark mode support)
 - `@/*` path alias configured
@@ -27,7 +27,14 @@
 - Repository pattern: `TaskRepository` interface
 - Supabase implementation: `SupabaseTaskRepository`
 - ShadCN components: Button, Card, Badge, Input
-- `App.tsx` has a minimal test UI (not the real app yet)
+- TanStack Query v5 hooks with optimistic updates (`useTasks`, `useTask`, `useCreateTask`, `useUpdateTask`, `useDeleteTask`, `useTouchTask`)
+- Query key factory for cache invalidation (`src/hooks/query-keys.ts`)
+- Zustand store for UI state: theme toggle, filters, selected task (`src/stores/ui-store.ts`)
+- React Router v6 with lazy-loaded routes (`/`, `/tasks/:id`, `/rejuvenate`)
+- App shell with `<Outlet />` layout pattern
+- `QueryClientProvider` wrapper with sensible defaults (60s stale, 5min gc, retry 1)
+- Theme init script in `index.html` to prevent flash of unstyled content
+- Placeholder feature views: LandscapeView (fetches real tasks), TaskDetailView, RejuvenationView
 
 ### CLI Prototype (`cli/`)
 - Ink 5 + @inkjs/ui + chalk 5
@@ -52,14 +59,8 @@
 
 ## What's Next
 
-### Phase 3: Supabase Integration (Web)
-- [ ] TanStack Query hooks wrapping `TaskRepository`
-- [ ] Zustand stores for UI state (selected task, filters, theme)
-- [ ] React Router v6 setup (routes: `/`, `/tasks/:id`, `/rejuvenate`)
-- [ ] Real data flowing from Supabase to React UI
-
 ### Phase 4: Main Features (Web)
-- [ ] LandscapeView — kanban board with category columns
+- [ ] LandscapeView — full kanban board with category columns
 - [ ] Task cards with status badges and neglect indicators
 - [ ] Quick status actions (Start, Pause, Resume, Complete, Touch)
 - [ ] Task CRUD (create, edit, delete with confirmation)
@@ -72,7 +73,6 @@
 ## Known Issues / Gaps
 - No test framework configured
 - No git repository initialized
-- `App.tsx` is placeholder, not wired to real app shell
 - CLI uses mock data, not connected to Supabase
 
 ---
