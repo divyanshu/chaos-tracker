@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import type { Task, TaskStatus } from '@/core/domain'
 import { toggleStatus } from '@/lib/task-status'
+import { useUIStore } from '@/stores/ui-store'
 
 interface UseKeyboardShortcutsOptions {
   onToggleStatus: (taskId: string, status: TaskStatus) => void
@@ -15,6 +16,8 @@ export function useKeyboardShortcuts({
 }: UseKeyboardShortcutsOptions) {
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
+      if (useUIStore.getState().paletteOpen) return
+
       const target = e.target as HTMLElement
       const tag = target.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return

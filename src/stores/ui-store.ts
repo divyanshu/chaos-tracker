@@ -19,6 +19,9 @@ interface UIState {
 
   selectedTaskId: string | null
   selectTask: (id: string | null) => void
+
+  paletteOpen: boolean
+  setPaletteOpen: (open: boolean) => void
 }
 
 function getInitialTheme(): Theme {
@@ -76,4 +79,7 @@ export const useUIStore = create<UIState>((set) => ({
 
   selectedTaskId: null,
   selectTask: (id) => set({ selectedTaskId: id }),
+
+  paletteOpen: false,
+  setPaletteOpen: (open) => set({ paletteOpen: open }),
 }))

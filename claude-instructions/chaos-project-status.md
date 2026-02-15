@@ -13,6 +13,7 @@
 | Phase 3 | Supabase Integration (hooks, stores, routing) | Done |
 | Phase 4 | Main Features (kanban, CRUD, rejuvenation) | Done |
 | Phase 5 | Retro 90s Restyle + Stacked Layout Toggle | Done |
+| Phase 6 | Keyboard-First Command Palette | Done |
 | CLI Prototype | Terminal UI with Ink 5 | Done |
 
 ---
@@ -26,7 +27,7 @@
 - Domain types: `Task`, `TaskStatus`, `Category`
 - Repository pattern: `TaskRepository` interface
 - Supabase implementation: `SupabaseTaskRepository`
-- ShadCN components: Button, Card, Badge, Input, Dialog, Dropdown Menu, Tooltip, Separator, Textarea, Select, Label
+- ShadCN components: Button, Card, Badge, Input, Dialog, Dropdown Menu, Tooltip, Separator, Textarea, Select, Label, Command
 - TanStack Query v5 hooks with optimistic updates (`useTasks`, `useTask`, `useCreateTask`, `useUpdateTask`, `useDeleteTask`, `useTouchTask`)
 - Query key factory for cache invalidation (`src/hooks/query-keys.ts`)
 - Zustand store for UI state: theme toggle, filters, selected task (`src/stores/ui-store.ts`)
@@ -57,9 +58,22 @@
 - Neglect indicators
 - In-memory mock data (no Supabase connection)
 
+#### Phase 6 Features
+- **Command Palette** (`src/features/command-palette/`) — Keyboard-first entry point (Cmd+K / Ctrl+K / `/`)
+  - `CommandPalette.tsx` — Dialog wrapper, state machine orchestrator
+  - `PaletteSearch.tsx` — Fuzzy search tasks, highlighted matches, category chips, neglect dots
+  - `PaletteActions.tsx` — Status actions + universal actions (touch/edit/delete/open) with single-key shortcuts
+  - `PaletteCreate.tsx` — Inline task creation with title + category chips
+  - `use-command-palette.ts` — `useReducer` state machine (idle → search → action/create)
+- **Core services** (`src/core/services/`) — Platform-agnostic logic for CLI reuse
+  - `fuzzy-search.ts` — Fuzzy search with scoring, subsequence matching, highlight extraction
+  - `palette-actions.ts` — Action resolution based on task status
+- Existing keyboard shortcuts suppressed while palette is open (via `paletteOpen` flag in Zustand store)
+
 ### Shared Core (`src/core/`)
 - Platform-agnostic domain types
 - Repository interfaces
+- Services (fuzzy search, palette actions)
 - Used by both web and CLI clients
 
 ### Infrastructure (`src/infrastructure/`)
@@ -70,15 +84,18 @@
 
 ## What's Next
 
-### Phase 5: Retro 90s Restyle + Stacked Layout Toggle (Done)
-- [x] 90s muted & cozy color palette (warm cream, dusty rose, sage green, warm taupe, denim blue)
-- [x] Angular design (0.175rem radius, rectangular badges/chips)
-- [x] Muted category colors (denim, sage, taupe, dusty rose, lavender, teal)
-- [x] Muted status badge colors (stone, slate, orange, green with opacity)
-- [x] Muted neglect indicators across TaskCard, TaskDetailView, RejuvenationView
-- [x] Stacked layout mode (vertical category sections with responsive task grid)
-- [x] Layout toggle in FilterBar (Rows3/Columns3 icons, persists to localStorage)
-- [x] Dark mode "cozy evening" palette (deep warm brown + cream)
+### Phase 6: Keyboard-First Command Palette (Done)
+- [x] ShadCN Command component (cmdk) installed
+- [x] Fuzzy search service with scoring, subsequence matching, highlight extraction
+- [x] Palette action resolution service (status-dependent + universal actions)
+- [x] State machine hook (idle → search → action/create) via useReducer
+- [x] Command palette dialog with Cmd+K / Ctrl+K / `/` triggers
+- [x] Search state: fuzzy-matched results with bold highlights, category chips, neglect dots
+- [x] Action state: status actions + touch/edit/delete/open with single-key shortcuts, delete confirmation
+- [x] Create state: inline title + category chip selector
+- [x] Esc chain: action → search → idle
+- [x] Existing keyboard shortcuts suppressed while palette is open
+- [x] Focus restoration on close
 
 ### Future Polish
 - [ ] Drag-and-drop for task cards between columns
