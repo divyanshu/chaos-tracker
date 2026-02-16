@@ -399,11 +399,11 @@ Within the `TypeAheadInput` component, when in `searching` mode with a selected 
 | `cli/src/hooks/use-navigation.ts` | Modify | Remap `/`, add typeahead guard |
 | `cli/src/components/layout/Footer.tsx` | Modify | Update shortcut hints |
 
-### Open Questions
+### Resolved Design Decisions
 
-1. **Should the dashboard tasks dim/fade when type-ahead is active?** Could help visually separate the overlay from the background content. Trade-off: more visual complexity vs. clarity.
-2. **Should quick-action confirmation show inline?** E.g., pressing `s` on a matched task could briefly flash "Started" next to the task row before refreshing.
-3. **Should the web command palette adopt this same pattern?** The type-ahead UX could replace `PaletteSearch` + `PaletteCreate` in the web client for consistency.
+1. **Dashboard tasks dim when type-ahead is active** — Yes. Fade/dim the category groups below to visually separate the overlay from background content.
+2. **Quick-action confirmation shows inline** — Yes. Pressing `s` on a matched task briefly flashes "Started" (or similar) next to the task row before refreshing the result in place.
+3. **Web command palette adoption** — Not now. Focus on CLI first. Consider porting this pattern to the web client as a follow-up after the CLI implementation is solid.
 
 ---
 
