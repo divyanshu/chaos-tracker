@@ -15,6 +15,7 @@
 | Phase 5 | Retro 90s Restyle + Stacked Layout Toggle | Done |
 | Phase 6 | Keyboard-First Command Palette | Done |
 | CLI Prototype | Terminal UI with Ink 5 | Done |
+| CLI: Type-Ahead Rapid Entry | Inline search+create input | Planned |
 
 ---
 
@@ -97,6 +98,18 @@
 - [x] Existing keyboard shortcuts suppressed while palette is open
 - [x] Focus restoration on close
 
+### CLI: Type-Ahead Rapid Entry (Planned)
+- [ ] Add `typeaheadOpen` sub-mode to AppState
+- [ ] Create `use-typeahead.ts` state machine hook (searching → creating → confirmed)
+- [ ] Create `TypeAheadInput.tsx` component (inline overlay with bordered panel)
+- [ ] Integrate into DashboardView (renders between header and category groups)
+- [ ] Fuzzy search with highlighted matches using existing `core/services/fuzzy-search.ts`
+- [ ] Result navigation (↑/↓) with quick status actions (s/p/c/t) on selected result
+- [ ] Tab → create mode: typed text becomes title, horizontal category chip selector (←/→)
+- [ ] Enter creates task, auto-dismiss confirmation flash
+- [ ] Remap `/` to type-ahead activation, keep `:` for command palette
+- [ ] Update Footer shortcut hints
+
 ### Future Polish
 - [ ] Drag-and-drop for task cards between columns
 - [ ] URL-synced filters (persist filter state in query params)
@@ -113,4 +126,4 @@
 
 ---
 
-*Last updated: 2026-02-13*
+*Last updated: 2026-02-16*

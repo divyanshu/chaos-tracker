@@ -219,6 +219,194 @@ Best for:
 
 ---
 
+## CLI: Type-Ahead Rapid Entry
+
+### Problem
+
+The CLI currently separates search and task creation into distinct views (`:` command palette, `n` create form, `f` filter). Switching between these modes creates friction. A user who wants to jot down a thought shouldn't need to think about whether they're "searching" or "creating" — they should just start typing.
+
+### Vision
+
+A single inline input that unifies search and create into one fluid interaction. Press `/`, start typing. If what you typed matches existing tasks, they appear filtered below the input. If nothing matches, a couple keystrokes turn your text into a new task. No view switches, no multi-step forms — just type and go.
+
+Think: Spotlight/Alfred for your task list.
+
+### Activation
+
+- **`/`** activates type-ahead from the dashboard (reclaimed from command palette)
+- **`:`** remains the command palette trigger (unchanged)
+- The input renders **inline within the dashboard**, not as a separate view
+
+### State Machine
+
+```
+Dashboard ──(/)--> SEARCHING ──(type)──> SEARCHING (filter updates live)
+                       │
+                       ├──(↑/↓)─────> SEARCHING (navigate matched results)
+                       ├──(Enter)────> Dashboard (open selected match)
+                       ├──(s/p/c/t)─> Dashboard (quick-action on selected match)
+                       ├──(Tab)──────> CREATING  (typed text becomes title)
+                       └──(Esc)──────> Dashboard (dismiss)
+
+                   CREATING ──(←/→)──> CREATING (cycle category chips)
+                       │
+                       ├──(Enter)────> Dashboard (task created, flash confirmation)
+                       └──(Esc)──────> SEARCHING (go back, keep text)
+```
+
+### Visual Design
+
+**Searching (matches found):**
+```
+┌─ / Quick Entry ──────────────────────────────────┐
+│ > review api_                                     │
+│                                                   │
+│ ▸ ● Review quarterly OKRs            Work    2h  │
+│   ○ Update API documentation          Work    3d  │
+│                                                   │
+│  2 matches · ↑↓:select · Enter:open · Tab:new    │
+└───────────────────────────────────────────────────┘
+╭─ Work (3) ────────────────────────────────────────╮
+│ ...tasks continue below...                        │
+╰───────────────────────────────────────────────────╯
+```
+
+**Searching (no matches):**
+```
+┌─ / Quick Entry ──────────────────────────────────┐
+│ > buy groceries for dinner_                       │
+│                                                   │
+│   No matching tasks                               │
+│                                                   │
+│  Tab: create "buy groceries for dinner" · Esc:×   │
+└───────────────────────────────────────────────────┘
+```
+
+**Creating (after Tab):**
+```
+┌─ / Quick Entry ──────────────────────────────────┐
+│ + buy groceries for dinner                        │
+│                                                   │
+│   Category:  Work  [Personal]  Chores  Connection │
+│                     ^^^^^^^^                      │
+│  ←→:category · Enter:create · Esc:back            │
+└───────────────────────────────────────────────────┘
+```
+
+**Confirmation flash (auto-dismiss after ~1s):**
+```
+┌─ / Quick Entry ──────────────────────────────────┐
+│ ✓ Created "buy groceries for dinner" in Personal  │
+└───────────────────────────────────────────────────┘
+```
+
+### Key UX Details
+
+1. **Highlight matched text** — Bold the matched portions in result titles using the existing `titleHighlights` from `fuzzy-search.ts`
+2. **Category + time metadata** — Each result row shows category (colored) and relative time
+3. **Status badge** — Each result row shows the status symbol (●/○/◐) in its status color
+4. **Neglect indicator** — Show ⚠ / !! on results where applicable
+5. **Result limit** — Show max 5-6 results to keep the overlay compact
+6. **Quick actions on matches** — When a result is selected (▸), `s`/`p`/`c`/`t` perform status actions inline without leaving type-ahead; the result updates in place
+7. **Tab always available** — Even when matches exist, Tab creates a new task from the current text (user might want a different task with similar words)
+8. **Empty input** — Shows most recently touched tasks (leverages existing `searchTasks` empty-query behavior)
+9. **Auto-dismiss confirmation** — After creating a task, show a brief success flash then return to dashboard with the task list refreshed
+
+### Implementation Plan
+
+#### Step 1: AppState Extension
+
+**File:** `cli/src/app.tsx`
+
+- Add `typeaheadOpen: boolean` to `AppState` (default `false`)
+- This is a sub-mode of dashboard, not a new view — the dashboard content stays visible underneath
+
+#### Step 2: Type-Ahead State Hook
+
+**New file:** `cli/src/hooks/use-typeahead.ts`
+
+- `useReducer`-based state machine with states: `searching | creating | confirmed`
+- State shape:
+  ```typescript
+  type TypeAheadState = {
+    mode: 'searching' | 'creating' | 'confirmed'
+    query: string
+    results: SearchResult[]       // from core/services/fuzzy-search
+    selectedResultIdx: number
+    categoryIdx: number           // for create mode
+    createdTaskTitle: string      // for confirmation flash
+  }
+  ```
+- Actions: `SET_QUERY`, `NAVIGATE_RESULT`, `SELECT_RESULT`, `START_CREATE`, `CYCLE_CATEGORY`, `CONFIRM_CREATE`, `RESET`
+- Import `searchTasks` from `core/services/fuzzy-search.ts` — already platform-agnostic
+- On `SET_QUERY`: run `searchTasks(tasks, query, 6)` and update results + reset selection to 0
+- On `START_CREATE`: transition to `creating` mode, carry over query as title
+- On `CONFIRM_CREATE`: call `repo.create(...)`, transition to `confirmed`, auto-reset after timeout
+
+#### Step 3: Type-Ahead Component
+
+**New file:** `cli/src/components/TypeAheadInput.tsx`
+
+- Renders the bordered panel with:
+  - Text input line (using `@inkjs/ui` `TextInput` in `searching` mode)
+  - Results list or "no matches" message (in `searching` mode)
+  - Category chips row (in `creating` mode)
+  - Confirmation message (in `confirmed` mode)
+  - Context-sensitive hint bar at bottom
+- Highlighted match rendering: iterate `titleHighlights` ranges, wrap matched chars in `chalk.bold`
+- Category chips: horizontal row of `DEFAULT_CATEGORIES` names, selected one wrapped in `[brackets]` and colored
+- Uses `useInput` for non-text keys (↑/↓, Tab, Esc, ←/→, Enter in create mode, s/p/c/t for quick actions)
+
+#### Step 4: Dashboard Integration
+
+**Modified file:** `cli/src/views/DashboardView.tsx`
+
+- When `state.typeaheadOpen` is true, render `<TypeAheadInput />` between `<Header />` and the category groups
+- The dashboard content (categories, tasks) remains visible below for context
+
+#### Step 5: Keyboard Remapping
+
+**Modified file:** `cli/src/hooks/use-navigation.ts`
+
+- Change `/` handler: instead of opening command palette, set `typeaheadOpen: true`
+- Keep `:` as command palette trigger
+- Add `isActive` guard: `state.view === 'dashboard' && !state.typeaheadOpen`
+
+**Modified file:** `cli/src/components/layout/Footer.tsx`
+
+- Change `/:cmd` shortcut display to `/:entry` and `::cmd` (separate the two)
+
+#### Step 6: Quick Actions on Matched Results
+
+Within the `TypeAheadInput` component, when in `searching` mode with a selected result:
+- `s` → set selected task to `in_progress`
+- `p` → set selected task to `paused`
+- `c` → set selected task to `completed`
+- `t` → touch selected task
+- These fire the action and refresh results in-place (task stays in results with updated status)
+- Requires careful key handling: these single-char keys must NOT fire when the text input has focus. Solution: use a `useInput` handler that only activates for these keys when the input is not focused (i.e., user has pressed ↓ to navigate into the results list). Alternatively, require a modifier (e.g., Ctrl+S) or only enable quick actions when the user has navigated away from the input.
+
+**Preferred approach:** Track an `inputFocused` boolean. When the user presses ↓ from the input, `inputFocused` becomes false and the cursor moves into results. Keys like `s/p/c/t` work on the selected result. Pressing ↑ back to the top or typing any character returns focus to the input. This gives a clear two-zone interaction: **input zone** (typing filters) and **results zone** (navigation + actions).
+
+#### File Summary
+
+| File | Action | Purpose |
+|------|--------|---------|
+| `cli/src/app.tsx` | Modify | Add `typeaheadOpen` to AppState |
+| `cli/src/hooks/use-typeahead.ts` | Create | State machine hook |
+| `cli/src/components/TypeAheadInput.tsx` | Create | Main UI component |
+| `cli/src/views/DashboardView.tsx` | Modify | Render type-ahead overlay inline |
+| `cli/src/hooks/use-navigation.ts` | Modify | Remap `/`, add typeahead guard |
+| `cli/src/components/layout/Footer.tsx` | Modify | Update shortcut hints |
+
+### Open Questions
+
+1. **Should the dashboard tasks dim/fade when type-ahead is active?** Could help visually separate the overlay from the background content. Trade-off: more visual complexity vs. clarity.
+2. **Should quick-action confirmation show inline?** E.g., pressing `s` on a matched task could briefly flash "Started" next to the task row before refreshing.
+3. **Should the web command palette adopt this same pattern?** The type-ahead UX could replace `PaletteSearch` + `PaletteCreate` in the web client for consistency.
+
+---
+
 ## Future Platform Roadmap
 
 ### Electron (Mac Desktop)
@@ -246,7 +434,9 @@ Best for:
 | 2026-01-26 | Skip PWA for initial build | Keep setup simpler, add later if needed |
 | 2026-01-26 | Multi-client architecture | Experiment with Web, CLI, Canvas visualizations |
 | 2026-01-26 | Web (Kanban) first | Most conventional, establishes baseline before experiments |
+| 2026-02-16 | CLI type-ahead rapid entry | Unify search+create into single inline input for zero-friction task capture |
+| 2026-02-16 | Reclaim `/` for type-ahead, keep `:` for commands | `/` is natural "search" key; commands are a different intent |
 
 ---
 
-*Last updated: 2026-02-12*
+*Last updated: 2026-02-16*
