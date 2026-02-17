@@ -2,6 +2,7 @@ import React, { useEffect, useContext, useCallback } from 'react'
 import { Box, Text, useInput, useStdin } from 'ink'
 import { TextInput } from '@inkjs/ui'
 import { colors, categoryColor } from '../theme/colors.js'
+import { termWidth } from '../utils/terminal.js'
 import { useTypeahead } from '../hooks/use-typeahead.js'
 import { useTasks } from '../hooks/use-tasks.js'
 import { AppStateContext } from '../app.js'
@@ -91,14 +92,14 @@ export function TypeAheadInput({ onClose }: TypeAheadInputProps) {
     [selectedResult, setStatus, touchTask, setQuery, ta.query],
   )
 
-  // Panel border
-  const panelWidth = 54
+  // Panel border (full terminal width)
+  const w = termWidth()
   const titleText = ' / Quick Entry '
   const topLine =
     colors.dim('\u250c\u2500') +
     colors.accent.bold(titleText) +
-    colors.dim('\u2500'.repeat(Math.max(panelWidth - titleText.length - 2, 0)) + '\u2510')
-  const bottomLine = colors.dim('\u2514' + '\u2500'.repeat(panelWidth) + '\u2518')
+    colors.dim('\u2500'.repeat(Math.max(w - titleText.length - 3, 0)) + '\u2510')
+  const bottomLine = colors.dim('\u2514' + '\u2500'.repeat(w - 2) + '\u2518')
 
   if (ta.mode === 'confirmed') {
     return (
@@ -106,7 +107,7 @@ export function TypeAheadInput({ onClose }: TypeAheadInputProps) {
         <Text>{topLine}</Text>
         <Box paddingLeft={2} paddingRight={2}>
           <Text>
-            {colors.inProgress('\u2713')} Created &quot;{colors.primary(ta.createdTaskTitle)}&quot; in{' '}
+            {colors.success('\u2713')} Created &quot;{colors.primary(ta.createdTaskTitle)}&quot; in{' '}
             {categoryColor(ta.createdTaskCategory)(ta.createdTaskCategory)}
           </Text>
         </Box>

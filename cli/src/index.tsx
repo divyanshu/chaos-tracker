@@ -22,5 +22,8 @@ if (useMock) {
   repo = new SupabaseTaskRepository()
 }
 
+// Clear previous terminal content for a clean start
+console.clear()
+
 const { waitUntilExit } = render(<App repo={repo} />)
 waitUntilExit().catch(() => {})

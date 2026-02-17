@@ -29,7 +29,6 @@ export function DashboardView() {
       {isRawModeSupported && !state.typeaheadOpen && (
         <KeyboardHandler flatTaskIds={flatTaskIds} />
       )}
-      {state.typeaheadOpen && <TypeAheadInput onClose={closeTypeahead} />}
       {tasksByCategory.map(({ category, tasks }) => (
         <Box key={category} dimColor={state.typeaheadOpen}>
           <CategoryGroup
@@ -39,7 +38,11 @@ export function DashboardView() {
           />
         </Box>
       ))}
-      <Footer />
+      {state.typeaheadOpen ? (
+        <TypeAheadInput onClose={closeTypeahead} />
+      ) : (
+        <Footer />
+      )}
     </Box>
   )
 }
