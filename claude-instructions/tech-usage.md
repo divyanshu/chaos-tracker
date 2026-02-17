@@ -10,7 +10,7 @@ This file tracks the technologies and platforms used in the chaos-tracker projec
 | Anthropic | AI Assistant | Claude Code for development assistance |
 | Zed.dev | Code Editor | Primary development environment |
 
-## Frontend Stack (Planned)
+## Web Frontend Stack
 
 | Technology | Purpose | Notes |
 |------------|---------|-------|
@@ -22,11 +22,23 @@ This file tracks the technologies and platforms used in the chaos-tracker projec
 | Zustand | Client State | Lightweight UI state management |
 | React Router v6 | Routing | Works in Electron context |
 
-## Future Platforms (Roadmap)
+## CLI Stack
+
+| Technology | Purpose | Notes |
+|------------|---------|-------|
+| Ink 5 | Terminal UI Framework | React for terminals |
+| @inkjs/ui | Ink Components | TextInput, Select, etc. |
+| chalk 5 | Terminal Styling | Colors and formatting |
+| tsup | Build Tool | Bundles to standalone dist with shebang |
+| tsx | Dev Runner | TypeScript execution for development |
+| dotenv | Env Loading | Reads `.env` config files |
+
+## Platforms
 
 | Platform | Technology | Status |
 |----------|------------|--------|
-| Web | React + Vite | Planned |
+| Web | React + Vite | Done (Phases 1-6) |
+| CLI | Node.js + Ink 5 | Done (prototype + productionization in progress) |
 | Mac Desktop | Electron | Future |
 | Mobile | React Native | Future |
 

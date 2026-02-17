@@ -16,6 +16,8 @@
 | Phase 6 | Keyboard-First Command Palette | Done |
 | CLI Prototype | Terminal UI with Ink 5 | Done |
 | CLI: Type-Ahead Rapid Entry | Inline search+create input | Done |
+| CLI: Productionization | Global install via `chaos` command | In Progress |
+| CLI: Onboarding & Config | First-run wizard + `chaos config` | Done |
 
 ---
 
@@ -58,6 +60,17 @@
 - Command palette (:), filter view (f), help (?)
 - Neglect indicators
 - In-memory mock data (no Supabase connection)
+
+#### CLI Production Features
+- Supabase integration built (not just mock data) — loads `.env.local` from project root
+- `--mock` flag for in-memory testing mode
+- tsup build with shebang for global `chaos` command
+- **First-run onboarding wizard** — detects missing credentials, walks user through interactive setup
+  - `OnboardingView` — multi-step wizard (welcome → URL → key → confirm)
+  - `ConfigView` — view/edit credentials via `chaos config`
+  - `cli/src/utils/config.ts` — config file read/write/detect utility
+  - Saves credentials to `~/.config/chaos-tracker/.env` with `chmod 600`
+  - Boot sequence branches: `chaos config` | `--mock` | env vars present | onboarding
 
 #### Phase 6 Features
 - **Command Palette** (`src/features/command-palette/`) — Keyboard-first entry point (Cmd+K / Ctrl+K / `/`)
@@ -111,6 +124,19 @@
 - [x] Remap `/` to type-ahead activation, keep `:` for command palette
 - [x] Update Footer shortcut hints (added `/:find`)
 
+### CLI: Onboarding & Config (Done)
+- [x] Config utility (`cli/src/utils/config.ts`): read/write/detect/mask/applyToEnv
+- [x] OnboardingView: multi-step wizard (welcome → URL → key → confirm → launch app)
+- [x] ConfigView: view current values (masked key), edit flow, auto-exit after save
+- [x] Boot sequence branching in index.tsx: config | mock | env present | onboarding
+- [x] Dynamic import of SupabaseTaskRepository only after env vars confirmed
+
+### CLI: Productionization (In Progress)
+- [ ] Ensure tsup bundles shared `core/` imports into standalone dist
+- [x] Fix env loading: env vars → `~/.config/chaos-tracker/.env` → cwd `.env.local`
+- [ ] Build + `npm link` for global `chaos` command
+- [ ] Verify `chaos` and `chaos --mock` work from any directory
+
 ### Future Polish
 - [ ] Drag-and-drop for task cards between columns
 - [ ] URL-synced filters (persist filter state in query params)
@@ -122,9 +148,7 @@
 
 ## Known Issues / Gaps
 - No test framework configured
-- No git repository initialized
-- CLI uses mock data, not connected to Supabase
 
 ---
 
-*Last updated: 2026-02-16*
+*Last updated: 2026-02-17*

@@ -1,29 +1,58 @@
 import { config } from 'dotenv'
-import { resolve, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
+import { homedir } from 'node:os'
 import { render } from 'ink'
 import React from 'react'
 import { App } from './app.js'
 import type { TaskRepository } from '../../src/core/repositories/task-repository.js'
+import { hasSupabaseEnv, writeConfig, applyConfigToEnv } from './utils/config.js'
 
-// Load .env.local from project root (silently no-ops if missing)
-const __dirname = dirname(fileURLToPath(import.meta.url))
-config({ path: resolve(__dirname, '../../.env.local') })
+// Load environment variables (first match wins, already-set env vars take priority)
+// 1. ~/.config/chaos-tracker/.env  — XDG-style user config
+// 2. .env.local in cwd             — for running from project directory
+config({ path: resolve(homedir(), '.config/chaos-tracker/.env'), quiet: true })
+config({ path: resolve(process.cwd(), '.env.local'), quiet: true })
 
-const useMock = process.argv.includes('--mock')
+const args = process.argv.slice(2)
+const useMock = args.includes('--mock')
+const useConfig = args.includes('config')
 
-let repo: TaskRepository
-
-if (useMock) {
-  const { MockTaskRepository } = await import('./infrastructure/mock-task-repository.js')
-  repo = new MockTaskRepository()
-} else {
-  const { SupabaseTaskRepository } = await import('./infrastructure/supabase-task-repository.js')
-  repo = new SupabaseTaskRepository()
+// --- Branch: `chaos config` ---
+if (useConfig) {
+  const { ConfigView } = await import('./views/ConfigView.js')
+  console.clear()
+  const { waitUntilExit } = render(<ConfigView />)
+  await waitUntilExit().catch(() => {})
+  process.exit(0)
 }
 
-// Clear previous terminal content for a clean start
-console.clear()
+// --- Branch: `chaos --mock` ---
+if (useMock) {
+  const { MockTaskRepository } = await import('./infrastructure/mock-task-repository.js')
+  startApp(new MockTaskRepository())
+} else if (hasSupabaseEnv()) {
+  // --- Branch: env vars present ---
+  const { SupabaseTaskRepository } = await import('./infrastructure/supabase-task-repository.js')
+  startApp(new SupabaseTaskRepository())
+} else {
+  // --- Branch: no credentials — run onboarding ---
+  const { OnboardingView } = await import('./views/OnboardingView.js')
+  console.clear()
+  const onboarding = render(
+    <OnboardingView
+      onComplete={async (cfg) => {
+        writeConfig(cfg)
+        applyConfigToEnv(cfg)
+        onboarding.unmount()
+        const { SupabaseTaskRepository } = await import('./infrastructure/supabase-task-repository.js')
+        startApp(new SupabaseTaskRepository())
+      }}
+    />
+  )
+}
 
-const { waitUntilExit } = render(<App repo={repo} />)
-waitUntilExit().catch(() => {})
+function startApp(repo: TaskRepository) {
+  console.clear()
+  const { waitUntilExit } = render(<App repo={repo} />)
+  waitUntilExit().catch(() => {})
+}

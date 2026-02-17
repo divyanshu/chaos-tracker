@@ -106,4 +106,57 @@ From the reference screenshot:
 
 ---
 
-*Last updated: 2026-01-26*
+## CLI Requirements
+
+### First-Run Onboarding
+
+When the CLI launches with no Supabase credentials configured:
+1. Show welcome message with project name
+2. Display config file path (`~/.config/chaos-tracker/.env`)
+3. Prompt for Supabase URL (with placeholder hint)
+4. Prompt for Supabase Anon Key (with placeholder hint)
+5. Show confirmation step with URL in full and key masked (first 8 + last 4 chars)
+6. On confirm: save to disk (`chmod 600`), apply to env, launch main app
+7. On reject: restart from URL step
+8. Show tip: "Run with --mock to try without Supabase"
+
+### `chaos config` Command
+
+View and edit stored credentials:
+1. Show current Supabase URL (or "(not set)")
+2. Show current Anon Key masked (or "(not set)")
+3. `e` to enter edit mode (URL → Key → save)
+4. `q`/`Esc` to exit
+5. After save: show "Saved successfully." flash, auto-exit after 1s
+
+### CLI Boot Sequence
+
+Priority order:
+1. `chaos config` — render config view, exit
+2. `chaos --mock` — use MockTaskRepository, skip credential checks
+3. Env vars present — use SupabaseTaskRepository, launch app
+4. No env vars — render onboarding wizard
+
+### CLI Keyboard Shortcuts
+
+| Key | Action | Context |
+|-----|--------|---------|
+| `j`/`k` or `↑`/`↓` | Navigate tasks | Dashboard |
+| `n` | New task | Dashboard |
+| `s` | Start task | Dashboard (selected task) |
+| `p` | Pause task | Dashboard (selected task) |
+| `c` | Complete task | Dashboard (selected task) |
+| `t` | Touch task | Dashboard (selected task) |
+| `d` | Delete task | Dashboard (selected task) |
+| `/` | Open type-ahead search/create | Dashboard |
+| `:` | Open command palette | Dashboard |
+| `f` | Open filter view | Dashboard |
+| `?` | Show help | Dashboard |
+| `q` | Quit | Dashboard |
+| `e` | Edit credentials | Config view |
+| `Enter`/`y` | Confirm | Onboarding confirm step |
+| `Esc`/`n` | Restart/cancel | Onboarding confirm step |
+
+---
+
+*Last updated: 2026-02-17*

@@ -4,7 +4,7 @@
 
 ---
 
-## Current Status: CLI Prototype Complete, Web Phases 1-2 Done
+## Current Status: CLI Productionization In Progress, Onboarding Done, Web Phases 1-6 Done
 
 **Related Documents:**
 - `chaos-tracker-requirements.md` - Detailed feature requirements
@@ -156,14 +156,15 @@ Standard kanban board with category columns. Best for:
 - Users who think spatially
 
 ### Experiment 2: CLI (Command Line Interface)
-*Prototype complete — `cli/` directory*
+*Production app — `cli/` directory*
 
 Terminal-based task management using Ink 5 (React for terminals):
-- **Tech**: Ink 5 + @inkjs/ui + chalk 5 + tsx
-- **Reuses**: `core/` domain types directly via relative imports
-- **Data**: In-memory mock repository with seed data (no Supabase)
-- **Features**: Dashboard (category groups), keyboard navigation (j/k/arrows), status actions (s/p/c/t/d), task create/edit forms, command palette (:), filter view (f), help (?), neglect indicators
-- **Run**: `cd cli && npm run dev`
+- **Tech**: Ink 5 + @inkjs/ui + chalk 5 + tsup (build) + tsx (dev)
+- **Reuses**: `core/` domain types bundled via tsup at build time
+- **Data**: Supabase (default) or in-memory mock (`--mock` flag)
+- **Features**: Dashboard (category groups), keyboard navigation (j/k/arrows), status actions (s/p/c/t/d), task create/edit forms, command palette (:), type-ahead rapid entry (/), filter view (f), help (?), neglect indicators
+- **Install**: `cd cli && npm install && npm run build && npm link`
+- **Run**: `chaos` (global) or `cd cli && npm run dev` (development)
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -407,6 +408,85 @@ Within the `TypeAheadInput` component, when in `searching` mode with a selected 
 
 ---
 
+## CLI: First-Time Onboarding & `chaos config`
+
+### Problem
+Users must manually create `~/.config/chaos-tracker/.env` with Supabase credentials before the CLI works. This adds friction for sharing with others.
+
+### Solution
+The CLI detects missing credentials on first run and walks the user through an interactive setup wizard. A `chaos config` command allows editing credentials later.
+
+### Architecture
+
+**Boot sequence in `index.tsx`:**
+```
+1. dotenv loads config files (unchanged)
+2. Parse argv:
+   a. `chaos config`  → render ConfigView, exit
+   b. `chaos --mock`  → MockTaskRepository, start app
+   c. env vars exist  → SupabaseTaskRepository, start app
+   d. no env vars     → render OnboardingView
+3. (onboarding path) On complete:
+   - writeConfig() saves to disk
+   - applyConfigToEnv() sets process.env
+   - dynamic import SupabaseTaskRepository
+   - start app
+```
+
+**Key**: `supabase-task-repository.ts` is only dynamically imported AFTER env vars are confirmed present, avoiding the synchronous throw in `supabase.ts`.
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| `cli/src/utils/config.ts` | Config read/write/detect utility (pure Node.js, no React/Ink) |
+| `cli/src/views/OnboardingView.tsx` | Multi-step wizard: welcome → URL → key → confirm |
+| `cli/src/views/ConfigView.tsx` | View/edit screen for `chaos config` |
+| `cli/src/index.tsx` | Boot sequence branching |
+
+### Config Utility (`config.ts`)
+- `configFileExists()` — checks if `~/.config/chaos-tracker/.env` exists
+- `readConfig()` — parses URL and key from file
+- `writeConfig(config)` — creates dir + writes file with `chmod 600`
+- `applyConfigToEnv(config)` — sets `process.env` vars
+- `hasSupabaseEnv()` — checks if both env vars are present
+- `maskValue(value)` — shows first 8 + last 4 chars for display
+
+---
+
+## CLI: Productionization
+
+### Goal
+Make the CLI installable as a global `chaos` command from the local git repo.
+
+### Changes
+
+#### 1. tsup bundling
+Ensure `../../src/core/` imports are bundled into `dist/index.js`. tsup/esbuild bundles local imports by default (only `node_modules` are external), but we verify this works and add explicit config if needed.
+
+#### 2. Environment config resolution
+Replace hardcoded `../../.env.local` path with a resolution chain that works from any directory:
+1. **Environment variables** already set in shell (highest priority)
+2. **`~/.config/chaos-tracker/.env`** — XDG-style persistent config
+3. **`.env.local` in cwd** — fallback for running from project directory
+
+#### 3. Install workflow
+```bash
+cd cli
+npm install
+npm run build    # tsup → dist/index.js with shebang
+npm link         # symlinks `chaos` into global node bin
+```
+
+After this, `chaos` works from any directory. `chaos --mock` for offline/testing.
+
+### What we're NOT doing
+- **npm workspaces**: tsup bundles everything at build time, no runtime cross-package deps needed
+- **npm publish**: Not needed — local git clone install is sufficient
+- **Repo restructure**: Current layout works fine with tsup bundling
+
+---
+
 ## Future Platform Roadmap
 
 ### Electron (Mac Desktop)
@@ -436,7 +516,11 @@ Within the `TypeAheadInput` component, when in `searching` mode with a selected 
 | 2026-01-26 | Web (Kanban) first | Most conventional, establishes baseline before experiments |
 | 2026-02-16 | CLI type-ahead rapid entry | Unify search+create into single inline input for zero-friction task capture |
 | 2026-02-16 | Reclaim `/` for type-ahead, keep `:` for commands | `/` is natural "search" key; commands are a different intent |
+| 2026-02-17 | CLI productionization via npm link | Global `chaos` command from local repo, no npm publish needed |
+| 2026-02-17 | XDG config for CLI credentials | `~/.config/chaos-tracker/.env` so CLI works from any directory |
+| 2026-02-17 | Interactive onboarding wizard | Detect missing credentials on first run, walk through setup; `chaos config` for editing later |
+| 2026-02-17 | Dynamic import for SupabaseTaskRepository | Only import after env vars confirmed present, avoids synchronous throw in supabase.ts |
 
 ---
 
-*Last updated: 2026-02-16*
+*Last updated: 2026-02-17*
