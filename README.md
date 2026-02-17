@@ -13,16 +13,17 @@ A minimalist, keyboard-first task tracker built with React and Supabase. Tasks l
 
 ## Current Status
 
-The web app is functional with all core features built:
-
 | Area | Status |
 |------|--------|
-| Kanban board with filtering | Done |
-| Task CRUD (create, edit, delete) | Done |
-| Command palette with fuzzy search | Done |
-| Keyboard shortcuts | Done |
-| Supabase integration | Done |
-| CLI prototype (Ink 5, separate `cli/` directory) | Done |
+| Web: Kanban board with filtering | Done |
+| Web: Task CRUD (create, edit, delete) | Done |
+| Web: Command palette with fuzzy search | Done |
+| Web: Keyboard shortcuts | Done |
+| Supabase integration (web + CLI) | Done |
+| CLI: Dashboard, navigation, status actions | Done |
+| CLI: Type-ahead rapid entry (search + create) | Done |
+| CLI: First-run onboarding wizard + `chaos config` | Done |
+| CLI: Global `chaos` command (productionization) | In Progress |
 
 Still on the backlog: drag-and-drop, toast notifications, loading skeletons, accessibility audit.
 
@@ -38,14 +39,19 @@ src/               Web client (React 18 + Vite)
   components/ui/   ShadCN components
   hooks/           TanStack Query wrappers
   stores/          Zustand (UI state)
-cli/               Terminal client (Ink 5, uses mock data)
+cli/               Terminal client (Ink 5 + Supabase)
+  views/           Dashboard, onboarding wizard, config, task detail
+  hooks/           Navigation, type-ahead state machine
+  utils/           Config file management, time formatting
 ```
 
 **Data flow:** UI -> React Hook -> TanStack Query -> TaskRepository interface -> Supabase
 
 ## Tech Stack
 
-React 18, TypeScript, Vite, Tailwind CSS, ShadCN UI, TanStack Query v5, Zustand, Supabase, React Router v6
+**Web:** React 18, TypeScript, Vite, Tailwind CSS, ShadCN UI, TanStack Query v5, Zustand, Supabase, React Router v6
+
+**CLI:** Node.js, Ink 5, @inkjs/ui, chalk 5, tsup, dotenv
 
 ---
 
@@ -141,17 +147,34 @@ npm run lint      # Run ESLint
 npm run preview   # Preview production build locally
 ```
 
-### CLI (experimental)
+### CLI
 
-There's also a terminal-based prototype in `cli/` that uses Ink 5 with mock data (no Supabase connection):
+The terminal client lives in `cli/` and connects to the same Supabase database as the web app.
 
 ```bash
 cd cli
 npm install
-npm run dev
+npm run build     # Build with tsup
+npm link          # Install globally as `chaos`
+```
+
+On first run, `chaos` will walk you through connecting to your Supabase project with an interactive setup wizard. Credentials are saved to `~/.config/chaos-tracker/.env`.
+
+```bash
+chaos             # Launch (onboarding wizard on first run)
+chaos config      # View or edit stored credentials
+chaos --mock      # Run with in-memory mock data (no Supabase needed)
+```
+
+For development:
+
+```bash
+cd cli && npm run dev
 ```
 
 ## Keyboard Shortcuts
+
+### Web
 
 | Key | Action |
 |-----|--------|
@@ -160,6 +183,21 @@ npm run dev
 | `t` | Touch focused task |
 | `Tab` / `Shift+Tab` | Navigate between tasks |
 | `Esc` | Close palette / go back |
+
+### CLI
+
+| Key | Action |
+|-----|--------|
+| `j` / `k` or arrows | Navigate tasks |
+| `n` | New task |
+| `s` / `p` / `c` | Start / pause / complete task |
+| `t` | Touch task |
+| `d` | Delete task |
+| `/` | Type-ahead search + create |
+| `:` | Command palette |
+| `f` | Filter view |
+| `?` | Help |
+| `q` | Quit |
 
 ## License
 
