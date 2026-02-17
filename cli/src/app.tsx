@@ -19,6 +19,7 @@ export type AppState = {
   selectedTaskId: string | null
   filterCategories: string[]
   filterStatuses: string[]
+  typeaheadOpen: boolean
 }
 
 export const RepoContext = React.createContext<TaskRepository>(null as unknown as TaskRepository)
@@ -29,6 +30,7 @@ export const AppStateContext = React.createContext<{
   state: {
     tasks: [], view: 'dashboard', selectedIndex: 0,
     selectedTaskId: null, filterCategories: [], filterStatuses: [],
+    typeaheadOpen: false,
   },
   setState: () => {},
 })
@@ -42,6 +44,7 @@ export function App({ repo }: { repo: TaskRepository }) {
     selectedTaskId: null,
     filterCategories: [],
     filterStatuses: [],
+    typeaheadOpen: false,
   })
 
   const loadTasks = useCallback(async () => {

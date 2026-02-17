@@ -15,7 +15,7 @@
 | Phase 5 | Retro 90s Restyle + Stacked Layout Toggle | Done |
 | Phase 6 | Keyboard-First Command Palette | Done |
 | CLI Prototype | Terminal UI with Ink 5 | Done |
-| CLI: Type-Ahead Rapid Entry | Inline search+create input | Planned |
+| CLI: Type-Ahead Rapid Entry | Inline search+create input | Done |
 
 ---
 
@@ -98,17 +98,18 @@
 - [x] Existing keyboard shortcuts suppressed while palette is open
 - [x] Focus restoration on close
 
-### CLI: Type-Ahead Rapid Entry (Planned)
-- [ ] Add `typeaheadOpen` sub-mode to AppState
-- [ ] Create `use-typeahead.ts` state machine hook (searching → creating → confirmed)
-- [ ] Create `TypeAheadInput.tsx` component (inline overlay with bordered panel)
-- [ ] Integrate into DashboardView (renders between header and category groups)
-- [ ] Fuzzy search with highlighted matches using existing `core/services/fuzzy-search.ts`
-- [ ] Result navigation (↑/↓) with quick status actions (s/p/c/t) on selected result
-- [ ] Tab → create mode: typed text becomes title, horizontal category chip selector (←/→)
-- [ ] Enter creates task, auto-dismiss confirmation flash
-- [ ] Remap `/` to type-ahead activation, keep `:` for command palette
-- [ ] Update Footer shortcut hints
+### CLI: Type-Ahead Rapid Entry (Done)
+- [x] Add `typeaheadOpen` sub-mode to AppState
+- [x] Create `use-typeahead.ts` state machine hook (searching → creating → confirmed)
+- [x] Create `TypeAheadInput.tsx` component (inline overlay with bordered panel)
+- [x] Integrate into DashboardView (renders between header and category groups, dims categories)
+- [x] Fuzzy search with highlighted matches using existing `core/services/fuzzy-search.ts`
+- [x] Result navigation (↑/↓) with two-zone keyboard (input zone vs results zone)
+- [x] Quick status actions (s/p/c/t) on selected result in results zone
+- [x] Tab → create mode: typed text becomes title, horizontal category chip selector (←/→)
+- [x] Enter creates task, auto-dismiss confirmation flash (~1s)
+- [x] Remap `/` to type-ahead activation, keep `:` for command palette
+- [x] Update Footer shortcut hints (added `/:find`)
 
 ### Future Polish
 - [ ] Drag-and-drop for task cards between columns

@@ -83,7 +83,11 @@ export function useKeyboardNav(flatTaskIds: string[]) {
       setState((s) => ({ ...s, view: 'help' }))
       return
     }
-    if (input === ':' || input === '/') {
+    if (input === '/') {
+      setState((s) => ({ ...s, typeaheadOpen: true }))
+      return
+    }
+    if (input === ':') {
       setState((s) => ({ ...s, view: 'command' }))
       return
     }
@@ -94,5 +98,5 @@ export function useKeyboardNav(flatTaskIds: string[]) {
     if (input === 'q') {
       process.exit(0)
     }
-  }, { isActive: state.view === 'dashboard' })
+  }, { isActive: state.view === 'dashboard' && !state.typeaheadOpen })
 }
