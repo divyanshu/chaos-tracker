@@ -12,6 +12,6 @@ export default defineConfig({
   banner: { js: '#!/usr/bin/env node' },
   clean: true,
   alias: {
-    '#core': resolve(__dirname, '../src/core'),
+    '#core': resolve(__dirname, '../core'),
   },
 })

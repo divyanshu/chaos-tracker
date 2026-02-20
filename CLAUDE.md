@@ -9,52 +9,54 @@ Always read `claude-instructions/chaos-tracker-plan.md` at the start of each ses
 ## Commands
 
 ```bash
-npm run dev       # Start Vite dev server with HMR
-npm run build     # TypeScript type-check (tsc -b) then Vite production build
-npm run lint      # ESLint across the project
-npm run preview   # Preview production build locally
+# CLI (primary interface)
+cd cli && npm run build   # Build CLI with tsup
+chaos --mock              # Run CLI in mock mode (after npm link)
+chaos                     # Run CLI with Supabase
+chaos config              # View/edit Supabase credentials
+
+# Web experiment (archived — not actively developed)
+cd experiments/web && npm install && npm run dev   # Start Vite dev server
 ```
 
 No test framework is configured yet.
 
 ## Architecture
 
-Chaos Tracker is a minimalist task tracking app built with React 18 + TypeScript + Vite. It uses Supabase (PostgreSQL) as the backend and ShadCN UI components with Tailwind CSS (Stone color theme).
+Chaos Tracker is a CLI-first task tracker. The CLI (`cli/`) is the primary interface, built with Ink 5 + TypeScript. The web client (React/Vite) is archived in `experiments/web/` for potential future revival. Supabase (PostgreSQL) is the backend.
 
-### Multi-client core/UI separation
+### Project structure
 
 ```
-core/              Platform-agnostic domain types & interfaces (no React)
-  domain/          Task, TaskStatus, Category types
-  repositories/    TaskRepository interface (data access contract)
-  services/        Business logic (planned)
-
-infrastructure/    Supabase implementations of core interfaces
-  supabase.ts              Client initialization (reads VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)
-  supabase-task-repository.ts  TaskRepository → Supabase REST API
-
-src/               Web client (React)
-  app/             App shell and providers (planned)
-  features/        Feature modules: landscape (kanban), tasks (CRUD), rejuvenation
-  components/ui/   ShadCN components (Button, Card, Badge, Input)
-  hooks/           React hooks (planned - TanStack Query wrappers)
-  stores/          Zustand stores (planned)
-  lib/utils.ts     cn() helper for className merging
+chaos-tracker/
+├── core/                        # Shared domain layer (platform-agnostic, no UI deps)
+│   ├── domain/                  # Task, TaskStatus, Category types
+│   ├── repositories/            # TaskRepository interface (data access contract)
+│   └── services/                # Business logic (fuzzy search, palette actions)
+├── cli/                         # Primary application (Ink 5 + @inkjs/ui + chalk)
+│   ├── src/                     # CLI source code
+│   ├── package.json             # CLI dependencies
+│   ├── tsup.config.ts           # Build config (bundles #core alias)
+│   └── tsconfig.json            # TS config (includes ../core/**)
+├── experiments/
+│   └── web/                     # Archived web experiment (React 18 + Vite + ShadCN)
+│       ├── src/                 # Web-specific React code, infrastructure/
+│       ├── package.json         # Web dependencies
+│       ├── vite.config.ts, tailwind.config.js, etc.
+│       └── tsconfig.json
+├── claude-instructions/         # Planning docs and specs
+├── CLAUDE.md
+├── README.md
+└── package.json                 # Minimal root (project identity only)
 ```
 
-The core layer has zero UI dependencies. The intended data flow is:
-**UI → React Hook → TanStack Query → TaskRepository interface → SupabaseTaskRepository → Supabase API**
+### Core / CLI relationship
 
-### Path alias
+The `core/` directory is shared between clients. The CLI imports it via a `#core` path alias:
+- `cli/tsup.config.ts` — alias `#core` → `../core`
+- `cli/tsconfig.json` — paths `#core/*` → `../core/*`
 
-`@/*` maps to `./src/*` (configured in both tsconfig.json and vite.config.ts).
-
-### Styling
-
-- Tailwind CSS 3 with CSS variables (HSL format) defined in `src/index.css`
-- Dark mode via class-based toggle
-- ShadCN components use `class-variance-authority` for type-safe variants
-- Base color: Stone (warm gray)
+Data flow: **CLI UI → Ink components → TaskRepository interface → SupabaseTaskRepository → Supabase API**
 
 ## Project Planning Docs
 

@@ -18,6 +18,7 @@
 | CLI: Type-Ahead Rapid Entry | Inline search+create input | Done |
 | CLI: Productionization | Global install via `chaos` command | Done |
 | CLI: Onboarding & Config | First-run wizard + `chaos config` | Done |
+| Repo Restructure | CLI primary, web → experiments/ | Done |
 
 ---
 
@@ -84,15 +85,23 @@
   - `palette-actions.ts` — Action resolution based on task status
 - Existing keyboard shortcuts suppressed while palette is open (via `paletteOpen` flag in Zustand store)
 
-### Shared Core (`src/core/`)
+### Shared Core (`core/` — top-level)
 - Platform-agnostic domain types
 - Repository interfaces
 - Services (fuzzy search, palette actions)
-- Used by both web and CLI clients
+- Used by CLI via `#core` alias; available to future clients
 
-### Infrastructure (`src/infrastructure/`)
+### Infrastructure (`experiments/web/src/infrastructure/`)
 - Supabase client initialization
 - `SupabaseTaskRepository` implementing `TaskRepository`
+- Lives inside web experiment (CLI has its own Supabase integration)
+
+### Repo Restructure (Done)
+- Promoted `src/core/` → top-level `core/` as shared domain layer
+- Moved web client (React/Vite/ShadCN) → `experiments/web/`
+- CLI is now the primary interface; web is archived for future revival
+- Root `package.json` is minimal (project identity only)
+- Updated CLI `#core` alias to point to `../core` instead of `../src/core`
 
 ---
 
