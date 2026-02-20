@@ -1,6 +1,6 @@
 import { useContext, useCallback } from 'react'
-import type { TaskStatus } from '../../../src/core/domain/task.js'
-import { DEFAULT_CATEGORIES } from '../../../src/core/domain/category.js'
+import type { TaskStatus } from '#core/domain/task.js'
+import { DEFAULT_CATEGORIES } from '#core/domain/category.js'
 import { RepoContext, AppStateContext } from '../app.js'
 
 export function useTasks() {

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Box, Text, useStdin } from 'ink'
-import type { Task } from '../../../../src/core/domain/task.js'
+import type { Task } from '#core/domain/task.js'
 import { StatusBadge } from './StatusBadge.js'
 import { colors, categoryColor } from '../../theme/colors.js'
 import { relativeTime, neglectIndicator } from '../../utils/time.js'

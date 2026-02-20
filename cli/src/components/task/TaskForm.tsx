@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Box, Text, useInput, useStdin } from 'ink'
 import { TextInput } from '@inkjs/ui'
-import { DEFAULT_CATEGORIES } from '../../../../src/core/domain/category.js'
+import { DEFAULT_CATEGORIES } from '#core/domain/category.js'
 import { colors, categoryColor } from '../../theme/colors.js'
 
 type TaskFormProps = {

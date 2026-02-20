@@ -5,7 +5,7 @@ import { TaskForm } from '../components/task/TaskForm.js'
 import { colors } from '../theme/colors.js'
 import { useTasks } from '../hooks/use-tasks.js'
 import { AppStateContext, RepoContext } from '../app.js'
-import type { Task } from '../../../src/core/domain/task.js'
+import type { Task } from '#core/domain/task.js'
 
 export function TaskDetailView() {
   const { state, setState } = useContext(AppStateContext)

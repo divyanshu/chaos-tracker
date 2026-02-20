@@ -4,7 +4,7 @@ import { TextInput } from '@inkjs/ui'
 import { colors } from '../theme/colors.js'
 import { AppStateContext } from '../app.js'
 import { useTasks } from '../hooks/use-tasks.js'
-import { DEFAULT_CATEGORIES } from '../../../src/core/domain/category.js'
+import { DEFAULT_CATEGORIES } from '#core/domain/category.js'
 
 const COMMANDS = [
   { name: 'add', alias: ['new', 'create'], desc: 'Create a new task — add <title>' },

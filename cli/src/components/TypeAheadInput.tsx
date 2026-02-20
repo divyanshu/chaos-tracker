@@ -8,8 +8,8 @@ import { useTasks } from '../hooks/use-tasks.js'
 import { AppStateContext } from '../app.js'
 import { StatusBadge } from './task/StatusBadge.js'
 import { relativeTime, neglectIndicator } from '../utils/time.js'
-import { DEFAULT_CATEGORIES } from '../../../src/core/domain/category.js'
-import type { SearchResult } from '../../../src/core/services/fuzzy-search.js'
+import { DEFAULT_CATEGORIES } from '#core/domain/category.js'
+import type { SearchResult } from '#core/services/fuzzy-search.js'
 
 type TypeAheadInputProps = {
   onClose: () => void

@@ -1,4 +1,4 @@
-import type { Task } from '../../../src/core/domain/task.js'
+import type { Task } from '#core/domain/task.js'
 
 const now = new Date()
 const hoursAgo = (h: number) => new Date(now.getTime() - h * 3600_000).toISOString()

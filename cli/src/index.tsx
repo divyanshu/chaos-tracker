@@ -4,7 +4,7 @@ import { homedir } from 'node:os'
 import { render } from 'ink'
 import React from 'react'
 import { App } from './app.js'
-import type { TaskRepository } from '../../src/core/repositories/task-repository.js'
+import type { TaskRepository } from '#core/repositories/task-repository.js'
 import { hasSupabaseEnv, writeConfig, applyConfigToEnv } from './utils/config.js'
 
 // Load environment variables (first match wins, already-set env vars take priority)

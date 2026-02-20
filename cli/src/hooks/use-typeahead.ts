@@ -1,7 +1,7 @@
 import { useReducer, useCallback } from 'react'
-import type { Task } from '../../../src/core/domain/task.js'
-import { searchTasks, type SearchResult } from '../../../src/core/services/fuzzy-search.js'
-import { DEFAULT_CATEGORIES } from '../../../src/core/domain/category.js'
+import type { Task } from '#core/domain/task.js'
+import { searchTasks, type SearchResult } from '#core/services/fuzzy-search.js'
+import { DEFAULT_CATEGORIES } from '#core/domain/category.js'
 
 export type TypeAheadMode = 'searching' | 'creating' | 'confirmed'
 

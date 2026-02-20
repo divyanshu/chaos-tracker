@@ -1,5 +1,5 @@
-import type { Task, NewTask, TaskUpdate } from '../../../src/core/domain/task.js'
-import type { TaskRepository } from '../../../src/core/repositories/task-repository.js'
+import type { Task, NewTask, TaskUpdate } from '#core/domain/task.js'
+import type { TaskRepository } from '#core/repositories/task-repository.js'
 import { supabase } from './supabase.js'
 
 export class SupabaseTaskRepository implements TaskRepository {
