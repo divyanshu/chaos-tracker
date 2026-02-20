@@ -16,7 +16,7 @@
 | Phase 6 | Keyboard-First Command Palette | Done |
 | CLI Prototype | Terminal UI with Ink 5 | Done |
 | CLI: Type-Ahead Rapid Entry | Inline search+create input | Done |
-| CLI: Productionization | Global install via `chaos` command | In Progress |
+| CLI: Productionization | Global install via `chaos` command | Done |
 | CLI: Onboarding & Config | First-run wizard + `chaos config` | Done |
 
 ---
@@ -131,11 +131,11 @@
 - [x] Boot sequence branching in index.tsx: config | mock | env present | onboarding
 - [x] Dynamic import of SupabaseTaskRepository only after env vars confirmed
 
-### CLI: Productionization (In Progress)
-- [ ] Ensure tsup bundles shared `core/` imports into standalone dist
+### CLI: Productionization (Done)
+- [x] Ensure tsup bundles shared `core/` imports into standalone dist
 - [x] Fix env loading: env vars → `~/.config/chaos-tracker/.env` → cwd `.env.local`
-- [ ] Build + `npm link` for global `chaos` command
-- [ ] Verify `chaos` and `chaos --mock` work from any directory
+- [x] Build + `npm link` for global `chaos` command
+- [x] Verify `chaos` and `chaos --mock` work from any directory
 
 ### Future Polish
 - [ ] Drag-and-drop for task cards between columns
@@ -151,4 +151,4 @@
 
 ---
 
-*Last updated: 2026-02-17*
+*Last updated: 2026-02-20*
