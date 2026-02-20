@@ -1,7 +1,7 @@
 import React, { useContext, useCallback } from 'react'
 import { Box, useStdin } from 'ink'
 import { CategoryGroup } from '../components/category/CategoryGroup.js'
-import { Header } from '../components/layout/Header.js'
+import { AsciiHeader } from '../components/layout/AsciiHeader.js'
 import { Footer } from '../components/layout/Footer.js'
 import { TypeAheadInput } from '../components/TypeAheadInput.js'
 import { useTasks } from '../hooks/use-tasks.js'
@@ -25,7 +25,7 @@ export function DashboardView() {
 
   return (
     <Box flexDirection="column">
-      <Header />
+      <AsciiHeader />
       {isRawModeSupported && !state.typeaheadOpen && (
         <KeyboardHandler flatTaskIds={flatTaskIds} />
       )}

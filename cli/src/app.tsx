@@ -1,8 +1,7 @@
 import React, { useState, useCallback } from 'react'
-import { Box, Text } from 'ink'
 import type { TaskRepository } from '#core/repositories/task-repository.js'
 import type { Task } from '#core/domain/task.js'
-import { colors } from './theme/colors.js'
+import { LoadingAnimation } from './components/LoadingAnimation.js'
 import { DashboardView } from './views/DashboardView.js'
 import { TaskDetailView } from './views/TaskDetailView.js'
 import { CreateTaskView } from './views/CreateTaskView.js'
@@ -58,11 +57,7 @@ export function App({ repo }: { repo: TaskRepository }) {
   }, [loadTasks])
 
   if (!ready) {
-    return (
-      <Box>
-        <Text>{colors.accent('Loading...')}</Text>
-      </Box>
-    )
+    return <LoadingAnimation />
   }
 
   return (
