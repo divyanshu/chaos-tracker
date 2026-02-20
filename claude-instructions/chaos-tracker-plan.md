@@ -4,7 +4,7 @@
 
 ---
 
-## Current Status: CLI Productionization In Progress, Onboarding Done, Web Phases 1-6 Done
+## Current Status: CLI Dashboard Enhancements Done, All CLI Features Complete, Web Phases 1-6 Done
 
 **Related Documents:**
 - `chaos-tracker-requirements.md` - Detailed feature requirements
@@ -17,8 +17,8 @@ A minimalist task tracking app that shows tasks and categories when needed, but 
 
 | Experiment | Description | Status |
 |------------|-------------|--------|
-| **Web (Kanban)** | Board-style columns, visual cards | Planned first |
-| **CLI** | Terminal-based, keyboard-driven | Future experiment |
+| **Web (Kanban)** | Board-style columns, visual cards | Done (archived in experiments/web/) |
+| **CLI** | Terminal-based, keyboard-driven | Done (primary interface) |
 | **Canvas** | Mind-map style, nodes & connections | Future experiment |
 
 All experiments share the same core logic and database.
@@ -147,22 +147,22 @@ When we add CLI or Canvas experiments, they'll be separate directories/projects 
 
 ## Visualization Experiments
 
-### Experiment 1: Web (Kanban) — CURRENT FOCUS
-*Phases 1-5 above*
+### Experiment 1: Web (Kanban) — Done (archived)
+*Phases 1-5 above. Archived in `experiments/web/`.*
 
 Standard kanban board with category columns. Best for:
 - Visual overview of all tasks
 - Drag-and-drop organization
 - Users who think spatially
 
-### Experiment 2: CLI (Command Line Interface)
+### Experiment 2: CLI (Command Line Interface) — Done (primary interface)
 *Production app — `cli/` directory*
 
 Terminal-based task management using Ink 5 (React for terminals):
 - **Tech**: Ink 5 + @inkjs/ui + chalk 5 + tsup (build) + tsx (dev)
 - **Reuses**: `core/` domain types bundled via tsup at build time
 - **Data**: Supabase (default) or in-memory mock (`--mock` flag)
-- **Features**: Dashboard (category groups), keyboard navigation (j/k/arrows), status actions (s/p/c/t/d), task create/edit forms, command palette (:), type-ahead rapid entry (/), filter view (f), help (?), neglect indicators
+- **Features**: Dashboard (category groups), keyboard navigation (j/k/arrows), status actions (s/p/c/t/d/e), task create/edit forms, command palette (:), type-ahead rapid entry (/), filter view (f), help (?), neglect indicators, Top of Mind view, collapsible Completed category, completed task migration on launch
 - **Install**: `cd cli && npm install && npm run build && npm link`
 - **Run**: `chaos` (global) or `cd cli && npm run dev` (development)
 
@@ -487,6 +487,34 @@ After this, `chaos` works from any directory. `chaos --mock` for offline/testing
 
 ---
 
+## CLI: Dashboard Enhancements
+
+### Goal
+Better completed-task handling, a "Top of Mind" view for recently-touched tasks, and visual polish.
+
+### Features
+1. **Dim completed tasks** — Override all colors to Stone-600 dim, hide neglect indicators, sort to bottom within each category
+2. **"Completed" collapsible category** — System category at dashboard bottom, collapsed by default (`[+]`/`[-]` indicator), `e` key toggles, excluded from keyboard nav when collapsed
+3. **Migrate completed tasks on launch** — On initial load, tasks with `status === 'completed'` and `category !== 'Completed'` are moved to the Completed category. During a session, just-completed tasks stay in their original category (dimmed, at bottom)
+4. **Vertical padding** — `marginBottom={1}` on the wide-terminal ASCII header
+5. **"Top of Mind" virtual category** — Rendered at the top of the dashboard, shows tasks touched within 7 days that are not completed, sorted by `last_touched` desc. View-only (not in keyboard nav). Ignores filters.
+6. **Hide empty categories** — Top of Mind and Completed hide when they have 0 tasks
+
+### Files Modified
+- `core/domain/category.ts` — `COMPLETED_CATEGORY_NAME` and `TOP_OF_MIND_CATEGORY_NAME` constants
+- `cli/src/theme/colors.ts` — Category colors for Completed and Top of Mind
+- `cli/src/app.tsx` — `completedCollapsed` state + migration in `loadTasks()`
+- `cli/src/components/layout/AsciiHeader.tsx` — Wide-terminal padding
+- `cli/src/components/task/TaskRow.tsx` — Dim completed tasks
+- `cli/src/components/layout/Panel.tsx` — `isCollapsed` prop
+- `cli/src/components/category/CategoryGroup.tsx` — Pass-through `isCollapsed`
+- `cli/src/hooks/use-tasks.ts` — Top of Mind computation, regular category sorting, Completed group, updated `flatTaskIds`
+- `cli/src/views/DashboardView.tsx` — Render Top of Mind → regular → Completed
+- `cli/src/hooks/use-navigation.ts` — `e` key handler
+- `cli/src/components/layout/Footer.tsx` — `e:expand` shortcut hint
+
+---
+
 ## Future Platform Roadmap
 
 ### Electron (Mac Desktop)
@@ -520,7 +548,8 @@ After this, `chaos` works from any directory. `chaos --mock` for offline/testing
 | 2026-02-17 | XDG config for CLI credentials | `~/.config/chaos-tracker/.env` so CLI works from any directory |
 | 2026-02-17 | Interactive onboarding wizard | Detect missing credentials on first run, walk through setup; `chaos config` for editing later |
 | 2026-02-17 | Dynamic import for SupabaseTaskRepository | Only import after env vars confirmed present, avoids synchronous throw in supabase.ts |
+| 2026-02-20 | CLI dashboard enhancements | Top of Mind view, collapsible Completed category, dim completed tasks, launch migration for better task lifecycle management |
 
 ---
 
-*Last updated: 2026-02-17*
+*Last updated: 2026-02-20*

@@ -91,6 +91,10 @@ export function useKeyboardNav(flatTaskIds: string[]) {
       setState((s) => ({ ...s, view: 'command' }))
       return
     }
+    if (input === 'e') {
+      setState((s) => ({ ...s, completedCollapsed: !s.completedCollapsed }))
+      return
+    }
     if (input === 'f') {
       setState((s) => ({ ...s, view: 'filter' }))
       return

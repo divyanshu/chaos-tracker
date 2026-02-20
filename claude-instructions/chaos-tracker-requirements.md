@@ -148,6 +148,7 @@ Priority order:
 | `c` | Complete task | Dashboard (selected task) |
 | `t` | Touch task | Dashboard (selected task) |
 | `d` | Delete task | Dashboard (selected task) |
+| `e` | Expand/collapse Completed category | Dashboard |
 | `/` | Open type-ahead search/create | Dashboard |
 | `:` | Open command palette | Dashboard |
 | `f` | Open filter view | Dashboard |
@@ -159,4 +160,33 @@ Priority order:
 
 ---
 
-*Last updated: 2026-02-17*
+## CLI Dashboard Features
+
+### Top of Mind
+- Virtual category rendered at the top of the dashboard
+- Shows tasks touched within the last 7 days that are not completed
+- Sorted by `last_touched` descending (most recent first)
+- View-only — tasks are not navigable here (they remain navigable in their real categories)
+- Ignores active category/status filters (always computed from the full task list)
+- Hidden when empty
+
+### Completed Tasks
+- Completed tasks are visually dimmed (Stone-600 color) with neglect indicators hidden
+- Within regular categories, completed tasks sort to the bottom
+- On app launch, tasks with `status === 'completed'` are migrated to a dedicated "Completed" system category
+- During a session, just-completed tasks stay in their original category (dimmed, at bottom); they migrate on next launch
+
+### Completed Category
+- System category rendered at the bottom of the dashboard, below all regular categories
+- Collapsed by default — shows header with `[+]` indicator and task count only
+- `e` key toggles expand/collapse
+- When expanded: shows `[-]` in header, tasks are included in keyboard navigation
+- When collapsed: tasks are excluded from keyboard navigation
+- Hidden when empty (no completed tasks)
+
+### Empty Category Handling
+- Categories with 0 tasks are hidden from the dashboard (including Top of Mind and Completed)
+
+---
+
+*Last updated: 2026-02-20*

@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react'
 import type { TaskRepository } from '#core/repositories/task-repository.js'
 import type { Task } from '#core/domain/task.js'
+import { COMPLETED_CATEGORY_NAME } from '#core/domain/category.js'
 import { LoadingAnimation } from './components/LoadingAnimation.js'
 import { DashboardView } from './views/DashboardView.js'
 import { TaskDetailView } from './views/TaskDetailView.js'
@@ -19,6 +20,7 @@ export type AppState = {
   filterCategories: string[]
   filterStatuses: string[]
   typeaheadOpen: boolean
+  completedCollapsed: boolean
 }
 
 export const RepoContext = React.createContext<TaskRepository>(null as unknown as TaskRepository)
@@ -29,7 +31,7 @@ export const AppStateContext = React.createContext<{
   state: {
     tasks: [], view: 'dashboard', selectedIndex: 0,
     selectedTaskId: null, filterCategories: [], filterStatuses: [],
-    typeaheadOpen: false,
+    typeaheadOpen: false, completedCollapsed: true,
   },
   setState: () => {},
 })
@@ -44,11 +46,24 @@ export function App({ repo }: { repo: TaskRepository }) {
     filterCategories: [],
     filterStatuses: [],
     typeaheadOpen: false,
+    completedCollapsed: true,
   })
 
   const loadTasks = useCallback(async () => {
     const tasks = await repo.getAll()
-    setState((s) => ({ ...s, tasks }))
+    // Migrate completed tasks to Completed category on launch
+    const migrations = tasks.filter(
+      (t) => t.status === 'completed' && t.category !== COMPLETED_CATEGORY_NAME
+    )
+    for (const t of migrations) {
+      await repo.update(t.id, { category: COMPLETED_CATEGORY_NAME })
+    }
+    if (migrations.length > 0) {
+      const migrated = await repo.getAll()
+      setState((s) => ({ ...s, tasks: migrated }))
+    } else {
+      setState((s) => ({ ...s, tasks }))
+    }
     setReady(true)
   }, [repo])
 

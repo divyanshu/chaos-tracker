@@ -14,7 +14,7 @@ function KeyboardHandler({ flatTaskIds }: { flatTaskIds: string[] }) {
 }
 
 export function DashboardView() {
-  const { tasksByCategory, flatTaskIds } = useTasks()
+  const { topOfMindGroup, regularCategories, completedGroup, flatTaskIds } = useTasks()
   const selectedTaskId = useSelectedTask(flatTaskIds)
   const { isRawModeSupported } = useStdin()
   const { state, setState } = useContext(AppStateContext)
@@ -29,7 +29,18 @@ export function DashboardView() {
       {isRawModeSupported && !state.typeaheadOpen && (
         <KeyboardHandler flatTaskIds={flatTaskIds} />
       )}
-      {tasksByCategory.map(({ category, tasks }) => (
+      {/* Top of Mind — view-only, no keyboard nav selection */}
+      {topOfMindGroup.tasks.length > 0 && (
+        <Box dimColor={state.typeaheadOpen}>
+          <CategoryGroup
+            category={topOfMindGroup.category}
+            tasks={topOfMindGroup.tasks}
+            selectedTaskId={null}
+          />
+        </Box>
+      )}
+      {/* Regular categories */}
+      {regularCategories.map(({ category, tasks }) => (
         <Box key={category} dimColor={state.typeaheadOpen}>
           <CategoryGroup
             category={category}
@@ -38,6 +49,17 @@ export function DashboardView() {
           />
         </Box>
       ))}
+      {/* Completed category — collapsible */}
+      {completedGroup.tasks.length > 0 && (
+        <Box dimColor={state.typeaheadOpen}>
+          <CategoryGroup
+            category={completedGroup.category}
+            tasks={completedGroup.tasks}
+            selectedTaskId={state.typeaheadOpen ? null : (state.completedCollapsed ? null : selectedTaskId)}
+            isCollapsed={state.completedCollapsed}
+          />
+        </Box>
+      )}
       {state.typeaheadOpen ? (
         <TypeAheadInput onClose={closeTypeahead} />
       ) : (

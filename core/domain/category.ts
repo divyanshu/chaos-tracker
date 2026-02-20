@@ -5,6 +5,9 @@ export type Category = {
   order: number
 }
 
+export const COMPLETED_CATEGORY_NAME = 'Completed'
+export const TOP_OF_MIND_CATEGORY_NAME = 'Top of Mind'
+
 export const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
   { name: 'Work', color: '#7a8fa6', order: 0 },
   { name: 'Personal', color: '#a0b89c', order: 1 },

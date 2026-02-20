@@ -1,7 +1,15 @@
-import { useContext, useCallback } from 'react'
-import type { TaskStatus } from '#core/domain/task.js'
-import { DEFAULT_CATEGORIES } from '#core/domain/category.js'
+import { useContext, useCallback, useMemo } from 'react'
+import type { Task, TaskStatus } from '#core/domain/task.js'
+import { DEFAULT_CATEGORIES, COMPLETED_CATEGORY_NAME, TOP_OF_MIND_CATEGORY_NAME } from '#core/domain/category.js'
 import { RepoContext, AppStateContext } from '../app.js'
+
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
+
+function sortCompletedToBottom(tasks: Task[]): Task[] {
+  const active = tasks.filter((t) => t.status !== 'completed')
+  const completed = tasks.filter((t) => t.status === 'completed')
+  return [...active, ...completed]
+}
 
 export function useTasks() {
   const repo = useContext(RepoContext)
@@ -22,13 +30,52 @@ export function useTasks() {
       })
     : state.tasks
 
-  const tasksByCategory = DEFAULT_CATEGORIES.map((cat) => ({
-    category: cat.name,
-    tasks: filteredTasks.filter((t) => t.category === cat.name),
-  }))
+  // Top of Mind: tasks touched within 7 days, not completed, sorted by last_touched desc
+  // Uses full task list (ignores filters)
+  const topOfMindTasks = useMemo(() => {
+    const now = Date.now()
+    return state.tasks
+      .filter((t) => {
+        const touchedMs = new Date(t.last_touched).getTime()
+        return (now - touchedMs) < SEVEN_DAYS_MS && t.status !== 'completed'
+      })
+      .sort((a, b) => new Date(b.last_touched).getTime() - new Date(a.last_touched).getTime())
+  }, [state.tasks])
 
-  // Flat list of task IDs in display order (for navigation)
-  const flatTaskIds = tasksByCategory.flatMap((g) => g.tasks.map((t) => t.id))
+  // Regular categories: sort completed to bottom within each
+  const regularCategories = useMemo(() =>
+    DEFAULT_CATEGORIES.map((cat) => ({
+      category: cat.name,
+      tasks: sortCompletedToBottom(filteredTasks.filter((t) => t.category === cat.name)),
+    })),
+    [filteredTasks]
+  )
+
+  // Completed category group
+  const completedTasks = useMemo(() =>
+    filteredTasks.filter((t) => t.category === COMPLETED_CATEGORY_NAME),
+    [filteredTasks]
+  )
+
+  const completedGroup = useMemo(() => ({
+    category: COMPLETED_CATEGORY_NAME,
+    tasks: completedTasks,
+  }), [completedTasks])
+
+  const topOfMindGroup = useMemo(() => ({
+    category: TOP_OF_MIND_CATEGORY_NAME,
+    tasks: topOfMindTasks,
+  }), [topOfMindTasks])
+
+  // Flat list for keyboard navigation: regular categories + completed (if expanded)
+  // Top of Mind is view-only — not included
+  const flatTaskIds = useMemo(() => {
+    const ids = regularCategories.flatMap((g) => g.tasks.map((t) => t.id))
+    if (!state.completedCollapsed) {
+      ids.push(...completedTasks.map((t) => t.id))
+    }
+    return ids
+  }, [regularCategories, completedTasks, state.completedCollapsed])
 
   const setStatus = useCallback(
     async (id: string, status: TaskStatus) => {
@@ -69,7 +116,10 @@ export function useTasks() {
 
   return {
     tasks: state.tasks,
-    tasksByCategory,
+    tasksByCategory: regularCategories,
+    topOfMindGroup,
+    regularCategories,
+    completedGroup,
     flatTaskIds,
     refresh,
     setStatus,

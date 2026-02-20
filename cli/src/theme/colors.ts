@@ -39,6 +39,8 @@ const CATEGORY_COLORS: Record<string, chalk.ChalkInstance> = {
   Connection: colors.cat4,
   Hobby: colors.cat5,
   Rejuvenate: colors.cat6,
+  Completed: colors.completed,
+  'Top of Mind': colors.accent,
 }
 
 export const categoryColor = (name: string): chalk.ChalkInstance =>

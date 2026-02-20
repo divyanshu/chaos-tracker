@@ -7,13 +7,14 @@ type CategoryGroupProps = {
   category: string
   tasks: Task[]
   selectedTaskId: string | null
+  isCollapsed?: boolean
 }
 
-export function CategoryGroup({ category, tasks, selectedTaskId }: CategoryGroupProps) {
+export function CategoryGroup({ category, tasks, selectedTaskId, isCollapsed }: CategoryGroupProps) {
   if (tasks.length === 0) return null
 
   return (
-    <Panel title={category} count={tasks.length}>
+    <Panel title={category} count={tasks.length} isCollapsed={isCollapsed}>
       {tasks.map((task) => (
         <TaskRow key={task.id} task={task} isSelected={task.id === selectedTaskId} />
       ))}

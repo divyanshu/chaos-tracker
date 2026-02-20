@@ -23,7 +23,8 @@ A minimalist, keyboard-first task tracker built with React and Supabase. Tasks l
 | CLI: Dashboard, navigation, status actions | Done |
 | CLI: Type-ahead rapid entry (search + create) | Done |
 | CLI: First-run onboarding wizard + `chaos config` | Done |
-| CLI: Global `chaos` command (productionization) | In Progress |
+| CLI: Global `chaos` command (productionization) | Done |
+| CLI: Dashboard enhancements (Top of Mind, Completed, dim) | Done |
 
 Still on the backlog: drag-and-drop, toast notifications, loading skeletons, accessibility audit.
 
@@ -32,20 +33,18 @@ Still on the backlog: drag-and-drop, toast notifications, loading skeletons, acc
 The codebase separates platform-agnostic logic from UI so the same core can power multiple clients (web, CLI, future canvas experiment):
 
 ```
-core/              Domain types, interfaces, services (no React)
-infrastructure/    Supabase implementation of repository interfaces
-src/               Web client (React 18 + Vite)
-  features/        Kanban board, task detail, rejuvenation, command palette
-  components/ui/   ShadCN components
-  hooks/           TanStack Query wrappers
-  stores/          Zustand (UI state)
-cli/               Terminal client (Ink 5 + Supabase)
-  views/           Dashboard, onboarding wizard, config, task detail
-  hooks/           Navigation, type-ahead state machine
-  utils/           Config file management, time formatting
+core/                  Domain types, interfaces, services (no React)
+cli/                   Primary interface — terminal client (Ink 5 + Supabase)
+  src/views/           Dashboard, onboarding wizard, config, task detail
+  src/hooks/           Navigation, type-ahead state machine, task grouping
+  src/components/      Category groups, panels, task rows, type-ahead
+  src/utils/           Config file management, time formatting
+experiments/web/       Archived web client (React 18 + Vite + ShadCN)
+  src/features/        Kanban board, task detail, rejuvenation, command palette
+  src/infrastructure/  Supabase implementation of repository interfaces
 ```
 
-**Data flow:** UI -> React Hook -> TanStack Query -> TaskRepository interface -> Supabase
+**CLI data flow:** Ink UI -> React hooks -> TaskRepository interface -> Supabase
 
 ## Tech Stack
 
@@ -193,6 +192,7 @@ cd cli && npm run dev
 | `s` / `p` / `c` | Start / pause / complete task |
 | `t` | Touch task |
 | `d` | Delete task |
+| `e` | Expand/collapse Completed category |
 | `/` | Type-ahead search + create |
 | `:` | Command palette |
 | `f` | Filter view |

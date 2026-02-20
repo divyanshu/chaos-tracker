@@ -19,6 +19,7 @@
 | CLI: Productionization | Global install via `chaos` command | Done |
 | CLI: Onboarding & Config | First-run wizard + `chaos config` | Done |
 | Repo Restructure | CLI primary, web → experiments/ | Done |
+| CLI: Dashboard Enhancements | Completed category, Top of Mind, dim completed | Done |
 
 ---
 
@@ -145,6 +146,16 @@
 - [x] Fix env loading: env vars → `~/.config/chaos-tracker/.env` → cwd `.env.local`
 - [x] Build + `npm link` for global `chaos` command
 - [x] Verify `chaos` and `chaos --mock` work from any directory
+
+### CLI: Dashboard Enhancements (Done)
+- [x] Dim completed tasks (Stone-600 color) + hide neglect indicators for completed
+- [x] Sort completed tasks to bottom within each category
+- [x] "Completed" collapsible category at bottom of dashboard (collapsed by default, `e` to toggle)
+- [x] Migrate completed tasks to Completed category on app launch
+- [x] Vertical padding between ASCII header and dashboard body
+- [x] "Top of Mind" virtual category at top — tasks touched within 7 days, sorted by recency
+- [x] Hide empty categories (Top of Mind and Completed hide when 0 tasks)
+- [x] `e` keyboard shortcut + footer hint
 
 ### Future Polish
 - [ ] Drag-and-drop for task cards between columns

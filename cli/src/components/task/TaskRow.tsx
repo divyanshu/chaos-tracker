@@ -11,18 +11,24 @@ type TaskRowProps = {
 }
 
 export function TaskRow({ task, isSelected }: TaskRowProps) {
+  const isCompleted = task.status === 'completed'
   const neglect = neglectIndicator(task.last_touched)
   const time = relativeTime(task.last_touched)
 
-  const titleColor = isSelected ? colors.selectedBold : colors.primary
-  const metaColor = isSelected ? colors.selected : colors.muted
+  const titleColor = isCompleted
+    ? colors.completed
+    : isSelected ? colors.selectedBold : colors.primary
+  const metaColor = isCompleted
+    ? colors.completed
+    : isSelected ? colors.selected : colors.muted
+  const indicatorColor = isCompleted ? colors.completed : colors.accent
 
   const statusLabel = task.status === 'in_progress' ? 'in progress' : task.status
 
   return (
     <Box>
       {isSelected ? (
-        <Text>{colors.accent('\u25b8 ')}</Text>
+        <Text>{indicatorColor('\u25b8 ')}</Text>
       ) : (
         <Text>{'  '}</Text>
       )}
@@ -34,7 +40,7 @@ export function TaskRow({ task, isSelected }: TaskRowProps) {
       <Box flexShrink={0} gap={1}>
         <Text>{metaColor(statusLabel)}</Text>
         <Text>{metaColor(time)}</Text>
-        {neglect ? (
+        {!isCompleted && neglect ? (
           <Text>{neglect === '!!' ? colors.danger(neglect) : colors.warn(neglect)}</Text>
         ) : null}
       </Box>

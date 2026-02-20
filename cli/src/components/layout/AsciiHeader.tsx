@@ -60,7 +60,7 @@ export function AsciiHeader() {
   }
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" marginBottom={1}>
       {COLORED_LINES.map((line, i) => (
         <Text key={i}>{line}</Text>
       ))}
