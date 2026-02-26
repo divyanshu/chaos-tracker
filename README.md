@@ -1,81 +1,77 @@
 # Chaos Tracker
 
-A minimalist, keyboard-first task tracker built with React and Supabase. Tasks live in category columns on a kanban board, with a command palette for fast navigation and quick status actions. The design philosophy: show tasks when needed, otherwise stay out of the way.
+A minimalist, keyboard-first task tracker for the terminal. Built with Ink 5 (React for CLIs) and backed by Supabase (PostgreSQL). Tasks are organized by category, managed through keyboard shortcuts, and surfaced with features like "Top of Mind" (recently touched tasks) and neglect warnings. The design philosophy: show tasks when needed, otherwise stay out of the way.
 
 ## Features
 
-- **Kanban board** -- tasks organized by category in scrollable columns
-- **Command palette** (Cmd+K / Ctrl+K) -- fuzzy search, quick actions, inline task creation
-- **Keyboard shortcuts** -- Space to toggle status, `t` to touch, Tab to navigate
+- **Terminal-native dashboard** -- tasks grouped by category, navigated entirely by keyboard
+- **Type-ahead quick entry** (`/`) -- fuzzy search existing tasks or create new ones inline, no view switching
+- **Command palette** (`:`) -- quick actions on tasks
 - **Touch system** -- acknowledge a task without changing its status; neglected tasks get visual warnings
-- **Rejuvenation view** -- a separate space for logging rest and recharge activities
-- **Dark mode** -- class-based toggle with a retro 90s aesthetic
-
-## Current Status
-
-| Area | Status |
-|------|--------|
-| Web: Kanban board with filtering | Done |
-| Web: Task CRUD (create, edit, delete) | Done |
-| Web: Command palette with fuzzy search | Done |
-| Web: Keyboard shortcuts | Done |
-| Supabase integration (web + CLI) | Done |
-| CLI: Dashboard, navigation, status actions | Done |
-| CLI: Type-ahead rapid entry (search + create) | Done |
-| CLI: First-run onboarding wizard + `chaos config` | Done |
-| CLI: Global `chaos` command (productionization) | Done |
-| CLI: Dashboard enhancements (Top of Mind, Completed, dim) | Done |
-
-Still on the backlog: drag-and-drop, toast notifications, loading skeletons, accessibility audit.
-
-## Architecture
-
-The codebase separates platform-agnostic logic from UI so the same core can power multiple clients (web, CLI, future canvas experiment):
+- **Top of Mind** -- automatically surfaces tasks you've touched in the last 7 days
+- **Collapsible Completed category** -- completed tasks stay out of the way until you need them
+- **First-run onboarding** -- interactive wizard walks you through Supabase setup on first launch
+- **Mock mode** (`--mock`) -- try it out with in-memory data, no database needed
 
 ```
-core/                  Domain types, interfaces, services (no React)
-cli/                   Primary interface — terminal client (Ink 5 + Supabase)
-  src/views/           Dashboard, onboarding wizard, config, task detail
-  src/hooks/           Navigation, type-ahead state machine, task grouping
-  src/components/      Category groups, panels, task rows, type-ahead
-  src/utils/           Config file management, time formatting
-experiments/web/       Archived web client (React 18 + Vite + ShadCN)
-  src/features/        Kanban board, task detail, rejuvenation, command palette
-  src/infrastructure/  Supabase implementation of repository interfaces
+┌─────────────────────────────────────────────────────────┐
+│ chaos-tracker                                    [?] help│
+├─────────────────────────────────────────────────────────┤
+│ WORK (3)                                                │
+│   ● Review PR #42                          [in progress]│
+│   ○ Update documentation                      [pending] │
+│   ○ Fix login bug                             [pending] │
+│                                                         │
+│ PERSONAL (2)                                            │
+│   ○ Call dentist                              [pending] │
+│   ◐ Plan weekend trip                          [paused] │
+├─────────────────────────────────────────────────────────┤
+│ > _                                                     │
+└─────────────────────────────────────────────────────────┘
 ```
-
-**CLI data flow:** Ink UI -> React hooks -> TaskRepository interface -> Supabase
-
-## Tech Stack
-
-**Web:** React 18, TypeScript, Vite, Tailwind CSS, ShadCN UI, TanStack Query v5, Zustand, Supabase, React Router v6
-
-**CLI:** Node.js, Ink 5, @inkjs/ui, chalk 5, tsup, dotenv
 
 ---
 
-## Local Setup
+## Quick Start
 
 ### Prerequisites
 
 - Node.js 18+ and npm
-- A free Supabase account (no credit card required)
 
 ### 1. Clone and install
 
 ```bash
 git clone <repo-url>
-cd chaos-tracker
+cd chaos-tracker/cli
 npm install
 ```
 
-### 2. Create a Supabase project
+### 2. Build and link
 
-1. Sign up at [supabase.com](https://supabase.com) (free tier)
+```bash
+npm run build     # Build with tsup
+npm link          # Install globally as `chaos`
+```
+
+### 3. Try it out
+
+```bash
+chaos --mock      # Launch with in-memory mock data (no Supabase needed)
+```
+
+This lets you explore the full UI without any database setup. When you're ready to persist your tasks, follow the Supabase setup below.
+
+---
+
+## Supabase Setup (for persistent storage)
+
+### 1. Create a Supabase project
+
+1. Sign up at [supabase.com](https://supabase.com) (free tier, no credit card required)
 2. Click **New Project**, pick a name and region, set a database password
 3. Wait for the project to finish provisioning (~30 seconds)
 
-### 3. Set up the database schema
+### 2. Set up the database schema
 
 Go to your Supabase project's **SQL Editor** (left sidebar) and run this query:
 
@@ -110,87 +106,43 @@ create policy "Allow all access" on public.rejuvenation_log for all to anon usin
 
 You should see "Success. No rows returned" -- that means it worked.
 
-### 4. Configure environment variables
+### 3. Launch and connect
 
 ```bash
-cp .env.local.example .env.local
+chaos
 ```
 
-Now grab your credentials from the Supabase dashboard:
+On first run, the CLI detects that no credentials are configured and launches an interactive onboarding wizard. It will ask you for:
 
-1. Go to **Settings > API** (or **Project Settings > API**)
-2. Copy the **Project URL** and **anon / public** key
-3. Paste them into `.env.local`:
+1. Your **Supabase Project URL** (found in Settings > API)
+2. Your **anon/public key** (found in Settings > API)
 
-```
-VITE_SUPABASE_URL=https://your-project-id.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key-here
-```
+Credentials are saved to `~/.config/chaos-tracker/.env` (with `chmod 600`). After setup, the app launches and connects to your database.
 
-### 5. Run the dev server
+To edit credentials later:
 
 ```bash
-npm run dev
+chaos config
 ```
-
-The app will be available at `http://localhost:5173`. You'll start with an empty board -- create your first task using the "+" input at the bottom of any column, or hit `Cmd+K` to open the command palette.
 
 ---
 
-## Available Scripts
-
-```bash
-npm run dev       # Start Vite dev server (http://localhost:5173)
-npm run build     # Type-check with tsc, then build for production
-npm run lint      # Run ESLint
-npm run preview   # Preview production build locally
-```
-
-### CLI
-
-The terminal client lives in `cli/` and connects to the same Supabase database as the web app.
-
-```bash
-cd cli
-npm install
-npm run build     # Build with tsup
-npm link          # Install globally as `chaos`
-```
-
-On first run, `chaos` will walk you through connecting to your Supabase project with an interactive setup wizard. Credentials are saved to `~/.config/chaos-tracker/.env`.
+## Usage
 
 ```bash
 chaos             # Launch (onboarding wizard on first run)
-chaos config      # View or edit stored credentials
+chaos config      # View or edit stored Supabase credentials
 chaos --mock      # Run with in-memory mock data (no Supabase needed)
 ```
 
-For development:
-
-```bash
-cd cli && npm run dev
-```
-
-## Keyboard Shortcuts
-
-### Web
-
-| Key | Action |
-|-----|--------|
-| `Cmd+K` / `Ctrl+K` / `/` | Open command palette |
-| `Space` | Toggle task status (when focused) |
-| `t` | Touch focused task |
-| `Tab` / `Shift+Tab` | Navigate between tasks |
-| `Esc` | Close palette / go back |
-
-### CLI
+### Keyboard Shortcuts
 
 | Key | Action |
 |-----|--------|
 | `j` / `k` or arrows | Navigate tasks |
 | `n` | New task |
 | `s` / `p` / `c` | Start / pause / complete task |
-| `t` | Touch task |
+| `t` | Touch task (resets neglect timer) |
 | `d` | Delete task |
 | `e` | Expand/collapse Completed category |
 | `/` | Type-ahead search + create |
@@ -198,6 +150,49 @@ cd cli && npm run dev
 | `f` | Filter view |
 | `?` | Help |
 | `q` | Quit |
+
+---
+
+## Development
+
+For development without rebuilding on every change:
+
+```bash
+cd cli
+npm run dev       # Runs with tsx (live TypeScript execution)
+```
+
+### Architecture
+
+The codebase separates platform-agnostic logic from UI so the same core can power multiple clients:
+
+```
+chaos-tracker/
+├── core/                  Shared domain layer (no UI dependencies)
+│   ├── domain/            Task, TaskStatus, Category types
+│   ├── repositories/      TaskRepository interface
+│   └── services/          Fuzzy search, palette actions
+├── cli/                   Primary interface (Ink 5 + Supabase)
+│   ├── src/views/         Dashboard, onboarding, config, task detail
+│   ├── src/hooks/         Navigation, type-ahead, task grouping
+│   ├── src/components/    Category groups, panels, task rows
+│   └── src/utils/         Config file management, time formatting
+└── experiments/web/       Archived web client (React 18 + Vite + ShadCN)
+```
+
+The CLI imports `core/` via a `#core` path alias, bundled by tsup at build time.
+
+**Data flow:** Ink UI -> React hooks -> TaskRepository interface -> Supabase
+
+### Tech Stack
+
+Node.js, TypeScript, Ink 5, @inkjs/ui, chalk 5, tsup, Supabase
+
+---
+
+## Web Client (archived)
+
+An earlier web experiment (React 18 + Vite + ShadCN kanban board) lives in `experiments/web/`. It's feature-complete but not actively developed -- the CLI is the current focus. See `experiments/web/` if you're curious.
 
 ## License
 
