@@ -181,12 +181,34 @@
 - Double-click canvas background to create task
 - `#core` alias for shared domain layer imports
 
-### Future Polish
-- [ ] Drag-and-drop for task cards between columns
-- [ ] URL-synced filters (persist filter state in query params)
-- [ ] Toast notifications for actions (create, update, delete, touch)
-- [ ] Loading/error states with skeletons
-- [ ] Accessibility audit (ARIA labels, screen reader support)
+### Next: Dual-View Experience — In the Flow / Structured World
+
+**Status: Planning**
+
+The CLI dashboard will be split into two conceptual views:
+
+#### "In the Flow" View
+- Replaces "Top of Mind" — renamed to "In the Flow"
+- Shows tasks I'm actively context-switching between during the day
+- Touching a task logs a minimum 1-hour flow session
+- Resets daily — tasks are removed from "In the Flow" at the start of each day unless re-touched
+- Optimized for quick touches and fast context switches
+
+#### "Structured World" View
+- The full category/task layout for planning and review
+- All categories and tasks visible, organized by category
+- Where you go to organize, create, and manage tasks
+
+#### Flow Insights Visualization
+- A dedicated area to review task-working patterns
+- Metrics: average flow duration, task switching frequency, category switching patterns
+- Historical view of daily flow sessions
+- Answers: How long do I stay focused? Which tasks do I switch between? How often do I switch?
+
+#### Flow Check-In Notifications
+- Periodic check-ins during the day (e.g., "Still working on X?")
+- Detects if the user is still in flow or has context-switched
+- Helps build accurate flow data without manual tracking
 
 ---
 
@@ -195,4 +217,4 @@
 
 ---
 
-*Last updated: 2026-02-21*
+*Last updated: 2026-03-08*

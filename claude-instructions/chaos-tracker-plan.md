@@ -4,7 +4,7 @@
 
 ---
 
-## Current Status: CLI Dashboard Enhancements Done, All CLI Features Complete, Web Phases 1-6 Done
+## Current Status: Planning Dual-View Experience (In the Flow / Structured World)
 
 **Related Documents:**
 - `chaos-tracker-requirements.md` - Detailed feature requirements
@@ -19,7 +19,7 @@ A minimalist task tracking app that shows tasks and categories when needed, but 
 |------------|-------------|--------|
 | **Web (Kanban)** | Board-style columns, visual cards | Done (archived in experiments/web/) |
 | **CLI** | Terminal-based, keyboard-driven | Done (primary interface) |
-| **Canvas** | Mind-map style, nodes & connections | Future experiment |
+| **Canvas** | Mind-map style, nodes & connections | Done (experiments/canvas/) |
 
 All experiments share the same core logic and database.
 
@@ -188,35 +188,10 @@ Best for:
 - Quick keyboard-only workflows
 - Low distraction, text-focused
 
-### Experiment 3: Canvas (Mind Map)
-*Future — after Web MVP*
+### Experiment 3: Canvas (Mind Map) — Done
+*Built in `experiments/canvas/`*
 
-Freeform canvas with tasks as nodes. Potential approach:
-- **Tech**: React + ReactFlow or XYFlow
-- **Reuses**: `core/` domain types, `infrastructure/` Supabase client
-- **New**: Node components, edge connections, canvas controls
-
-```
-                    ┌─────────┐
-                    │  WORK   │
-                    └────┬────┘
-              ┌──────────┼──────────┐
-              ▼          ▼          ▼
-         ┌────────┐ ┌────────┐ ┌────────┐
-         │Task A  │ │Task B  │ │Task C  │
-         │        │ │        │ └────────┘
-         └───┬────┘ └────────┘
-             │
-             ▼
-        ┌─────────┐
-        │Subtask  │
-        └─────────┘
-```
-
-Best for:
-- Non-linear thinkers
-- Seeing relationships between tasks
-- Brainstorming and planning
+Infinite canvas with React Flow v12, GSAP animations, keyboard navigation, quick entry, command palette, task detail panel, sidebar layout mode, Supabase integration with mock fallback. See `chaos-project-status.md` for full feature list.
 
 ---
 
@@ -515,6 +490,45 @@ Better completed-task handling, a "Top of Mind" view for recently-touched tasks,
 
 ---
 
+## Next Phase: Dual-View Experience — In the Flow / Structured World
+
+### Vision
+
+Split the app into two modes that match how people actually work:
+
+1. **"In the Flow"** — The active workday view. Shows what you're touching right now. Optimized for fast context switches. Resets daily.
+2. **"Structured World"** — The planning/organizing view. Full category layout, all tasks, big-picture management.
+
+### Key Design Changes
+
+| Change | From | To |
+|--------|------|----|
+| "Top of Mind" category | 7-day window, always visible | **"In the Flow"** — today only, resets daily |
+| Touch semantics | Just updates `last_touched` | Logs a **1-hour minimum flow session** |
+| Flow data | Single `last_touched` timestamp | **Touch event log** with timestamps for analytics |
+
+### New Capabilities
+
+1. **Daily reset** — "In the Flow" clears at midnight / first launch of day. Tasks only appear when re-touched.
+2. **Flow Insights** — Visualization area showing focus duration, switch frequency, category patterns, daily flow timelines.
+3. **Flow Check-In Notifications** — Periodic prompts ("Still working on X?") to build accurate flow data without manual tracking.
+
+### Data Model Changes Needed
+- New `touch_events` table: `{ id, task_id, touched_at, category_at_time }`
+- Migrate from single `last_touched` field to event-sourced touch history
+- Keep `last_touched` on task for backward compat (denormalized from latest event)
+
+### Implementation Order (TBD)
+1. Rename "Top of Mind" → "In the Flow" + daily reset logic
+2. Touch event logging (new table + touch semantics)
+3. Structured World view separation
+4. Flow Insights visualization
+5. Notification system
+
+See `chaos-tracker-requirements.md` for detailed requirements.
+
+---
+
 ## Future Platform Roadmap
 
 ### Electron (Mac Desktop)
@@ -549,7 +563,8 @@ Better completed-task handling, a "Top of Mind" view for recently-touched tasks,
 | 2026-02-17 | Interactive onboarding wizard | Detect missing credentials on first run, walk through setup; `chaos config` for editing later |
 | 2026-02-17 | Dynamic import for SupabaseTaskRepository | Only import after env vars confirmed present, avoids synchronous throw in supabase.ts |
 | 2026-02-20 | CLI dashboard enhancements | Top of Mind view, collapsible Completed category, dim completed tasks, launch migration for better task lifecycle management |
+| 2026-03-08 | Dual-view experience | Split into "In the Flow" (active workday, daily reset, 1hr min flow sessions) and "Structured World" (planning/organizing); add flow insights and check-in notifications |
 
 ---
 
-*Last updated: 2026-02-20*
+*Last updated: 2026-03-08*
