@@ -15,6 +15,10 @@ chaos --mock              # Run CLI in mock mode (after npm link)
 chaos                     # Run CLI with Supabase
 chaos config              # View/edit Supabase credentials
 
+# Canvas experiment (React Flow infinite canvas)
+cd experiments/canvas && npm install && npm run dev  # Start Vite dev server
+# Runs in mock mode by default; add .env.local with VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY for Supabase
+
 # Web experiment (archived — not actively developed)
 cd experiments/web && npm install && npm run dev   # Start Vite dev server
 ```
@@ -39,6 +43,11 @@ chaos-tracker/
 │   ├── tsup.config.ts           # Build config (bundles #core alias)
 │   └── tsconfig.json            # TS config (includes ../core/**)
 ├── experiments/
+│   ├── canvas/                  # Canvas experiment (React Flow + GSAP + Tailwind)
+│   │   ├── src/                 # Canvas-specific React code
+│   │   ├── package.json         # Canvas dependencies
+│   │   ├── vite.config.ts       # Vite config (#core alias → ../../core)
+│   │   └── tsconfig.json
 │   └── web/                     # Archived web experiment (React 18 + Vite + ShadCN)
 │       ├── src/                 # Web-specific React code, infrastructure/
 │       ├── package.json         # Web dependencies

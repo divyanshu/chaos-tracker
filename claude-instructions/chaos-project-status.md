@@ -20,6 +20,7 @@
 | CLI: Onboarding & Config | First-run wizard + `chaos config` | Done |
 | Repo Restructure | CLI primary, web → experiments/ | Done |
 | CLI: Dashboard Enhancements | Completed category, Top of Mind, dim completed | Done |
+| Canvas Experiment | Infinite canvas with React Flow, keyboard-driven | Done |
 
 ---
 
@@ -157,6 +158,29 @@
 - [x] Hide empty categories (Top of Mind and Completed hide when 0 tasks)
 - [x] `e` keyboard shortcut + footer hint
 
+### Canvas Experiment (`experiments/canvas/`) — Done
+- Vite + React 18 + TypeScript + Tailwind + ShadCN (Stone theme, dark mode)
+- React Flow v12 (XYFlow) infinite canvas with pan/zoom, dot-grid, minimap, controls
+- Custom `TaskNode` component: status dot, title, category chip, relative time, neglect indicators, GSAP animations (appear, selection ring)
+- Custom `CategoryGroup` node: dashed bounding box, category label + count badge, GSAP fade-in
+- Auto-layout algorithm: groups tasks by category in a grid, snap-to-grid (20px)
+- Position persistence via localStorage (`position-store.ts`)
+- Supabase integration with mock data fallback (no env vars = mock mode)
+- TanStack Query v5 hooks with optimistic updates (port from web experiment)
+- Full keyboard navigation: arrow/vim keys, Tab cycling, s/p/c/t/d/e action keys
+- Quick Entry panel (`/` or `n`): fuzzy search + create flow with category picker
+- Command Palette (`:` or Cmd+K): task search, status actions, navigation commands
+- Task Detail slide-over panel: view/edit/delete with inline form
+- Help overlay (`?`): keyboard shortcut reference
+- Sidebar (split layout mode, `l` toggle): task list grouped by category, Top of Mind, Completed
+- Two layout modes: full canvas (Mode A) and canvas + sidebar (Mode B)
+- Plus Jakarta Sans typography
+- GSAP v3 animations: node appear/disappear, panel slide-in, selection ring, result stagger
+- Sonner toast notifications for all CRUD actions
+- Loading skeleton state
+- Double-click canvas background to create task
+- `#core` alias for shared domain layer imports
+
 ### Future Polish
 - [ ] Drag-and-drop for task cards between columns
 - [ ] URL-synced filters (persist filter state in query params)
@@ -171,4 +195,4 @@
 
 ---
 
-*Last updated: 2026-02-20*
+*Last updated: 2026-02-21*
