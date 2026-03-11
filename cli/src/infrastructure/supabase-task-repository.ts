@@ -27,11 +27,11 @@ export class SupabaseTaskRepository implements TaskRepository {
     return data as Task
   }
 
-  async getByCategory(category: string): Promise<Task[]> {
+  async getByTag(tag: string): Promise<Task[]> {
     const { data, error } = await supabase
       .from('tasks')
       .select('*')
-      .eq('category', category)
+      .contains('tags', [tag])
       .order('created_at', { ascending: false })
 
     if (error) throw error

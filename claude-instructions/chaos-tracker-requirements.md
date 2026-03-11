@@ -30,10 +30,47 @@
 
 ---
 
+## Task Organization Model
+
+Tasks have two axes of organization:
+
+### Categories (Workflow Buckets)
+A task has exactly **one** category, representing its urgency/workflow stage:
+
+| Category | Color | Purpose |
+|----------|-------|---------|
+| **Urgent** | Red | Deadline-driven, needs immediate attention |
+| **Up Next** | Amber | Queued for action soon (default for new tasks) |
+| **Admin** | Stone | Routine/maintenance tasks |
+| **Flow** | Purple | Deep work, creative, no hard deadline |
+
+Users move tasks between categories as priorities shift (e.g., "Up Next" → "Urgent" when a deadline approaches).
+
+### Tags (Topic Labels)
+A task has **zero or more** tags describing its life area:
+
+| Tag | Color |
+|-----|-------|
+| Work | Stone blue |
+| Personal | Sage green |
+| Chores | Tan |
+| Connection | Mauve |
+| Hobby | Lavender |
+| Rejuvenate | Teal |
+
+Tags are optional and used for filtering/visual context, not primary grouping.
+
+### Special System Categories
+- **Completed** — Tasks with `status === 'completed'` migrate here on launch
+- **Top of Mind** — Virtual category showing tasks touched within 7 days
+
+---
+
 ## Task Filtering
 
-- Filter by category (show/hide specific columns)
+- Filter by category (workflow buckets: Urgent, Up Next, Admin, Flow)
 - Filter by status (e.g., hide completed tasks)
+- Filter by tag (planned — not yet implemented)
 - Filters persist in URL or local storage
 
 ---
@@ -187,75 +224,7 @@ Priority order:
 ### Empty Category Handling
 - Categories with 0 tasks are hidden from the dashboard (including Top of Mind and Completed)
 
----
-
-## Dual-View Experience: In the Flow / Structured World
-
-### Concept
-
-The app experience is split into two views reflecting two modes of working:
-
-1. **"In the Flow"** — for when you're actively working and context-switching throughout the day
-2. **"Structured World"** — for when you're planning, organizing, and reviewing
-
-### "In the Flow" View
-
-**Replaces "Top of Mind".** This is the default view when the app opens during a workday.
-
-#### Touch Semantics
-- Touching a task means "I worked on this" — assume a **minimum 1-hour flow session** per touch
-- Multiple touches on the same task in a day extend the flow time (each touch = +1 hour minimum)
-- Touch timestamp is recorded for flow analytics
-
-#### Daily Reset
-- At the start of each new day (midnight or first app launch of the day), clear all tasks from "In the Flow"
-- Tasks only reappear if touched again that day
-- This reflects reality: yesterday's flow doesn't carry over unless you actively resume
-
-#### Display
-- Shows only tasks touched today, sorted by most recent touch
-- Compact layout optimized for quick scanning and fast touch actions
-- Categories are visible but secondary — the focus is on recency, not organization
-
-### "Structured World" View
-
-- Full category/task layout for planning and review
-- All categories and tasks visible, organized by category
-- This is where you go to create tasks, reorganize, edit details, and review the big picture
-- Completed category, filters, and all existing dashboard features live here
-
-### Flow Insights Visualization
-
-A dedicated area (accessible from either view) for reviewing task-working patterns.
-
-#### Metrics
-- **Flow duration**: How long do I typically stay focused on a single task? (based on touch intervals)
-- **Switch frequency**: How often do I context-switch in a day? (number of distinct task touches per day)
-- **Category patterns**: Which categories do I switch between most? Do I tend to hop between Work and Personal, or stay within one category?
-- **Daily flow map**: Timeline visualization of which tasks were touched and when throughout the day
-- **Streak tracking**: Consecutive days of touching a recurring task
-
-#### Data Requirements
-- Need to persist touch events with timestamps (not just `last_touched`)
-- Each touch event: `{ task_id, touched_at, category_at_time }`
-- Historical data for trend analysis (weekly/monthly views)
-
-### Flow Check-In Notifications
-
-Periodic check-ins that help build accurate flow data without constant manual tracking.
-
-#### Behavior
-- After a configurable interval (e.g., 30-60 minutes) since last touch, prompt: "Still working on [task name]?"
-- If yes: extend the flow session (auto-touch)
-- If no: ask what you switched to (optional — can dismiss)
-- If no response: assume flow ended at the last touch
-
-#### Implementation Considerations
-- CLI: Could use system notifications (node-notifier) or terminal bell
-- Canvas/Web: Browser notifications or in-app toast
-- Must be non-intrusive — a missed notification should not break anything
-- Configurable: enable/disable, interval, quiet hours
 
 ---
 
-*Last updated: 2026-03-08*
+*Last updated: 2026-03-11*

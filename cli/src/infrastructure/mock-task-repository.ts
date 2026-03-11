@@ -20,9 +20,9 @@ export class MockTaskRepository implements TaskRepository {
     return this.tasks.get(id) ?? null
   }
 
-  async getByCategory(category: string): Promise<Task[]> {
+  async getByTag(tag: string): Promise<Task[]> {
     return Array.from(this.tasks.values())
-      .filter((t) => t.category === category)
+      .filter((t) => t.tags.includes(tag))
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
   }
 

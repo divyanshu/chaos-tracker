@@ -490,6 +490,49 @@ Better completed-task handling, a "Top of Mind" view for recently-touched tasks,
 
 ---
 
+## Categories → Tags Refactor
+
+### Problem
+The original "categories" (Work, Personal, Chores, etc.) describe *what* a task is about, but don't help with day-to-day prioritization. Users need a way to triage tasks by urgency/workflow stage and move them between buckets as deadlines shift.
+
+### Solution
+Split the single concept into two:
+
+| Concept | Cardinality | Purpose | Values |
+|---------|-------------|---------|--------|
+| **Category** | One per task | Workflow bucket — how urgent/what mode | Urgent, Up Next, Admin, Flow |
+| **Tags** | Zero or more per task | Topic labels — what area of life | Work, Personal, Chores, Connection, Hobby, Rejuvenate |
+
+### Data Model
+```typescript
+type Task = {
+  // ...existing fields...
+  category: string    // workflow category (Urgent, Up Next, Admin, Flow)
+  tags: string[]      // topic labels (Work, Personal, etc.)
+}
+```
+
+### Key Decisions
+- Default category for new tasks: **Up Next**
+- Dashboard groups by **category** (workflow), tags shown as colored chips on rows
+- Completed and Top of Mind remain as special system categories
+- Tags are optional — tasks can have zero tags
+- `getByCategory()` removed from repository, replaced with `getByTag()`
+
+### Files Changed
+- `core/domain/task.ts` — Added `tags: string[]`
+- `core/domain/category.ts` — `DEFAULT_CATEGORIES` = 4 workflow categories, `DEFAULT_TAGS` = old categories, `Tag` type
+- `core/repositories/task-repository.ts` — `getByTag()` replaces `getByCategory()`
+- `cli/src/infrastructure/` — Mock + Supabase repos updated
+- `cli/src/infrastructure/seed-data.ts` — Reorganized with new categories + tags
+- `cli/src/theme/colors.ts` — New category colors, added `TAG_COLORS` + `tagColor()`
+- `cli/src/hooks/use-tasks.ts` — Groups by workflow categories
+- `cli/src/components/task/TaskRow.tsx` — Tag chip display
+- `cli/src/components/task/TaskDetail.tsx` — Tags display
+- `cli/src/views/CommandPaletteView.tsx` — Uses `DEFAULT_CATEGORY_NAME`
+
+---
+
 ## Next Phase: Dual-View Experience — In the Flow / Structured World
 
 ### Vision
@@ -564,7 +607,8 @@ See `chaos-tracker-requirements.md` for detailed requirements.
 | 2026-02-17 | Dynamic import for SupabaseTaskRepository | Only import after env vars confirmed present, avoids synchronous throw in supabase.ts |
 | 2026-02-20 | CLI dashboard enhancements | Top of Mind view, collapsible Completed category, dim completed tasks, launch migration for better task lifecycle management |
 | 2026-03-08 | Dual-view experience | Split into "In the Flow" (active workday, daily reset, 1hr min flow sessions) and "Structured World" (planning/organizing); add flow insights and check-in notifications |
+| 2026-03-11 | Categories → Tags refactor | Old categories become tags (topic labels, multi-select); new workflow categories (Urgent, Up Next, Admin, Flow) for day-to-day prioritization |
 
 ---
 
-*Last updated: 2026-03-08*
+*Last updated: 2026-03-11*

@@ -21,6 +21,7 @@
 | Repo Restructure | CLI primary, web → experiments/ | Done |
 | CLI: Dashboard Enhancements | Completed category, Top of Mind, dim completed | Done |
 | Canvas Experiment | Infinite canvas with React Flow, keyboard-driven | Done |
+| Categories → Tags Refactor | Workflow categories + topic tags | In Progress |
 
 ---
 
@@ -181,6 +182,34 @@
 - Double-click canvas background to create task
 - `#core` alias for shared domain layer imports
 
+### Categories → Tags Refactor (In Progress)
+
+**What changed:**
+- Old "categories" (Work, Personal, Chores, Connection, Hobby, Rejuvenate) are now **tags** — topic labels that can be assigned multiple per task
+- New **workflow categories** are the primary task grouping: **Urgent**, **Up Next**, **Admin**, **Flow**
+- Tasks have one category (workflow bucket) and zero or more tags (topic labels)
+- Default category for new tasks: "Up Next"
+
+**Done:**
+- [x] Domain types: `Task.tags: string[]` field, `DEFAULT_CATEGORIES` → 4 workflow categories, `DEFAULT_TAGS` for old categories
+- [x] Repository interface: `getByCategory()` → `getByTag()`
+- [x] Mock + Supabase repository implementations updated
+- [x] Seed data reorganized with new categories + tags
+- [x] Theme: new `CATEGORY_COLORS` (red/amber/stone/purple), `TAG_COLORS` + `tagColor()` export
+- [x] `use-tasks.ts` groups by workflow categories
+- [x] `TaskRow` shows tag chips on each row
+- [x] `TaskDetail` shows category + tags
+- [x] `TypeAheadInput`, `TaskForm`, `FilterView` work with new categories automatically
+- [x] `CommandPaletteView` uses `DEFAULT_CATEGORY_NAME`
+- [x] Error handling added to `app.tsx` `loadTasks()` for graceful Supabase failures
+
+**Remaining:**
+- [ ] Tag selection UI during task creation (currently creates with empty tags)
+- [ ] Tag editing on existing tasks
+- [ ] Supabase migration (add `tags text[]` column, migrate existing data)
+- [ ] Update `experiments/canvas/` for new model
+- [ ] Filter view: add tag filtering alongside category filtering
+
 ### Next: Dual-View Experience — In the Flow / Structured World
 
 **Status: Planning**
@@ -214,7 +243,8 @@ The CLI dashboard will be split into two conceptual views:
 
 ## Known Issues / Gaps
 - No test framework configured
+- Canvas experiment not yet updated for categories→tags refactor
 
 ---
 
-*Last updated: 2026-03-08*
+*Last updated: 2026-03-11*

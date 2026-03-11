@@ -4,7 +4,7 @@ import { TextInput } from '@inkjs/ui'
 import { colors } from '../theme/colors.js'
 import { AppStateContext } from '../app.js'
 import { useTasks } from '../hooks/use-tasks.js'
-import { DEFAULT_CATEGORIES } from '#core/domain/category.js'
+import { DEFAULT_CATEGORY_NAME } from '#core/domain/category.js'
 
 const COMMANDS = [
   { name: 'add', alias: ['new', 'create'], desc: 'Create a new task — add <title>' },
@@ -43,7 +43,7 @@ export function CommandPaletteView() {
       case 'new':
       case 'create':
         if (arg) {
-          await createTask(arg, DEFAULT_CATEGORIES[0].name)
+          await createTask(arg, DEFAULT_CATEGORY_NAME)
           goBack()
         } else {
           setState((s) => ({ ...s, view: 'create' }))

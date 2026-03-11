@@ -2,7 +2,7 @@ import React from 'react'
 import { Box, Text } from 'ink'
 import type { Task } from '#core/domain/task.js'
 import { StatusBadge } from './StatusBadge.js'
-import { colors } from '../../theme/colors.js'
+import { colors, tagColor } from '../../theme/colors.js'
 import { relativeTime, neglectIndicator } from '../../utils/time.js'
 
 type TaskRowProps = {
@@ -38,6 +38,9 @@ export function TaskRow({ task, isSelected }: TaskRowProps) {
         <Text wrap="truncate">{titleColor(task.title)}</Text>
       </Box>
       <Box flexShrink={0} gap={1}>
+        {!isCompleted && task.tags.length > 0 && (
+          <Text>{task.tags.map((t) => tagColor(t)(t)).join(' ')}</Text>
+        )}
         <Text>{metaColor(statusLabel)}</Text>
         <Text>{metaColor(time)}</Text>
         {!isCompleted && neglect ? (

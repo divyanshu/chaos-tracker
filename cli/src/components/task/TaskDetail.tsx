@@ -2,7 +2,7 @@ import React from 'react'
 import { Box, Text, useStdin } from 'ink'
 import type { Task } from '#core/domain/task.js'
 import { StatusBadge } from './StatusBadge.js'
-import { colors, categoryColor } from '../../theme/colors.js'
+import { colors, categoryColor, tagColor } from '../../theme/colors.js'
 import { relativeTime, neglectIndicator } from '../../utils/time.js'
 
 type TaskDetailProps = {
@@ -29,6 +29,12 @@ export function TaskDetail({ task }: TaskDetailProps) {
           <Text>{colors.dim('Category:')}</Text>
           <Text>{catColor(task.category)}</Text>
         </Box>
+        {task.tags.length > 0 && (
+          <Box gap={1}>
+            <Text>{colors.dim('Tags:')}</Text>
+            <Text>{task.tags.map((t) => tagColor(t)(t)).join(colors.dim(', '))}</Text>
+          </Box>
+        )}
         <Box gap={1}>
           <Text>{colors.dim('Status:')}</Text>
           <Text>{colors.primary(statusLabel)}</Text>

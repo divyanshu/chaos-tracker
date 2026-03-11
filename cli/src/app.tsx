@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react'
+import { Box, Text } from 'ink'
 import type { TaskRepository } from '#core/repositories/task-repository.js'
 import type { Task } from '#core/domain/task.js'
 import { COMPLETED_CATEGORY_NAME } from '#core/domain/category.js'
@@ -38,6 +39,7 @@ export const AppStateContext = React.createContext<{
 
 export function App({ repo }: { repo: TaskRepository }) {
   const [ready, setReady] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [state, setState] = useState<AppState>({
     tasks: [],
     view: 'dashboard',
@@ -50,21 +52,31 @@ export function App({ repo }: { repo: TaskRepository }) {
   })
 
   const loadTasks = useCallback(async () => {
-    const tasks = await repo.getAll()
-    // Migrate completed tasks to Completed category on launch
-    const migrations = tasks.filter(
-      (t) => t.status === 'completed' && t.category !== COMPLETED_CATEGORY_NAME
-    )
-    for (const t of migrations) {
-      await repo.update(t.id, { category: COMPLETED_CATEGORY_NAME })
+    try {
+      const tasks = await repo.getAll()
+      // Migrate completed tasks to Completed category on launch
+      const migrations = tasks.filter(
+        (t) => t.status === 'completed' && t.category !== COMPLETED_CATEGORY_NAME
+      )
+      for (const t of migrations) {
+        await repo.update(t.id, { category: COMPLETED_CATEGORY_NAME })
+      }
+      if (migrations.length > 0) {
+        const migrated = await repo.getAll()
+        setState((s) => ({ ...s, tasks: migrated }))
+      } else {
+        setState((s) => ({ ...s, tasks }))
+      }
+      setReady(true)
+    } catch (err: unknown) {
+      const message = err instanceof Error
+        ? err.message
+        : typeof err === 'object' && err !== null && 'message' in err
+          ? String((err as { message: unknown }).message)
+          : 'Unknown error connecting to Supabase'
+      setLoadError(message)
+      setReady(true)
     }
-    if (migrations.length > 0) {
-      const migrated = await repo.getAll()
-      setState((s) => ({ ...s, tasks: migrated }))
-    } else {
-      setState((s) => ({ ...s, tasks }))
-    }
-    setReady(true)
   }, [repo])
 
   React.useEffect(() => {
@@ -73,6 +85,16 @@ export function App({ repo }: { repo: TaskRepository }) {
 
   if (!ready) {
     return <LoadingAnimation />
+  }
+
+  if (loadError) {
+    return (
+      <Box flexDirection="column" padding={1}>
+        <Text color="red" bold>Failed to load tasks</Text>
+        <Text color="gray">{loadError}</Text>
+        <Text dimColor>{'\n'}Try: chaos --mock  (offline mode)  or  chaos config  (fix credentials)</Text>
+      </Box>
+    )
   }
 
   return (

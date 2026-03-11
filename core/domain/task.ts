@@ -6,6 +6,7 @@ export type Task = {
   description: string | null
   status: TaskStatus
   category: string
+  tags: string[]
   last_touched: string
   created_at: string
   updated_at: string

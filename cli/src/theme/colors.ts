@@ -8,14 +8,6 @@ export const colors = {
   dim: chalk.hex('#44403c'),         // Stone-700 — borders, hints, de-emphasized
   accent: chalk.hex('#c4b5fd'),      // Pastel purple — primary accent
 
-  // Category shades (monochromatic purple, light → rich)
-  cat1: chalk.hex('#e9d5ff'),        // Lavender — lightest
-  cat2: chalk.hex('#d8b4fe'),        // Light purple
-  cat3: chalk.hex('#c4b5fd'),        // Pastel purple
-  cat4: chalk.hex('#b197fc'),        // Medium purple
-  cat5: chalk.hex('#a78bfa'),        // Rich purple
-  cat6: chalk.hex('#8b5cf6'),        // Vivid purple
-
   // Semantic status — green/yellow/red used intentionally
   pending: chalk.hex('#78716c'),     // Stone-500 — neutral/inactive
   inProgress: chalk.hex('#86efac'),  // Green — active/success
@@ -32,16 +24,28 @@ export const colors = {
   selectedBold: chalk.bgHex('#292524').hex('#c4b5fd').bold,
 } as const
 
+// Workflow categories — primary task grouping
 const CATEGORY_COLORS: Record<string, chalk.ChalkInstance> = {
-  Work: colors.cat1,
-  Personal: colors.cat2,
-  Chores: colors.cat3,
-  Connection: colors.cat4,
-  Hobby: colors.cat5,
-  Rejuvenate: colors.cat6,
+  Urgent: chalk.hex('#f87171'),      // Red
+  'Up Next': chalk.hex('#fbbf24'),   // Amber
+  Admin: chalk.hex('#a8a29e'),       // Stone-400
+  Flow: chalk.hex('#c4b5fd'),        // Pastel purple
   Completed: colors.completed,
   'Top of Mind': colors.accent,
 }
 
 export const categoryColor = (name: string): chalk.ChalkInstance =>
   CATEGORY_COLORS[name] ?? colors.primary
+
+// Tags — topic labels with muted colors
+const TAG_COLORS: Record<string, chalk.ChalkInstance> = {
+  Work: chalk.hex('#7a8fa6'),
+  Personal: chalk.hex('#a0b89c'),
+  Chores: chalk.hex('#b8a99a'),
+  Connection: chalk.hex('#c4a0a0'),
+  Hobby: chalk.hex('#9a8db8'),
+  Rejuvenate: chalk.hex('#8aada6'),
+}
+
+export const tagColor = (name: string): chalk.ChalkInstance =>
+  TAG_COLORS[name] ?? colors.muted

@@ -1,6 +1,6 @@
 import { useContext, useCallback, useMemo } from 'react'
 import type { Task, TaskStatus } from '#core/domain/task.js'
-import { DEFAULT_CATEGORIES, COMPLETED_CATEGORY_NAME, TOP_OF_MIND_CATEGORY_NAME } from '#core/domain/category.js'
+import { DEFAULT_CATEGORIES, COMPLETED_CATEGORY_NAME, TOP_OF_MIND_CATEGORY_NAME, DEFAULT_CATEGORY_NAME } from '#core/domain/category.js'
 import { RepoContext, AppStateContext } from '../app.js'
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
@@ -105,7 +105,8 @@ export function useTasks() {
     async (title: string, category: string, description?: string) => {
       await repo.create({
         title,
-        category,
+        category: category || DEFAULT_CATEGORY_NAME,
+        tags: [],
         description: description ?? null,
         status: 'pending',
       })
