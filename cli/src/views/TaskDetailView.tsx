@@ -10,7 +10,7 @@ import type { Task } from '#core/domain/task.js'
 export function TaskDetailView() {
   const { state, setState } = useContext(AppStateContext)
   const repo = useContext(RepoContext)
-  const { setStatus, touchTask, deleteTask } = useTasks()
+  const { setStatus, deleteTask } = useTasks()
   const [task, setTask] = useState<Task | null>(null)
   const [editing, setEditing] = useState(false)
   const { isRawModeSupported } = useStdin()
@@ -33,8 +33,9 @@ export function TaskDetailView() {
         initialTitle={task.title}
         initialCategory={task.category}
         initialDescription={task.description ?? ''}
-        onSubmit={async (title, category, description) => {
-          await repo.update(task.id, { title, category, description: description || null })
+        initialTags={task.tags}
+        onSubmit={async (title, category, description, tags) => {
+          await repo.update(task.id, { title, category, description: description || null, tags })
           const tasks = await repo.getAll()
           setState((s) => ({ ...s, tasks, view: 'dashboard' }))
         }}
@@ -51,7 +52,6 @@ export function TaskDetailView() {
         <Text>{colors.accent('s')}{colors.dim(':start')}</Text>
         <Text>{colors.accent('p')}{colors.dim(':pause')}</Text>
         <Text>{colors.accent('c')}{colors.dim(':done')}</Text>
-        <Text>{colors.accent('t')}{colors.dim(':touch')}</Text>
         <Text>{colors.accent('d')}{colors.dim(':del')}</Text>
         <Text>{colors.accent('Esc')}{colors.dim(':back')}</Text>
       </Box>
@@ -61,7 +61,6 @@ export function TaskDetailView() {
           onEdit={() => setEditing(true)}
           onBack={goBack}
           setStatus={setStatus}
-          touchTask={touchTask}
           deleteTask={deleteTask}
           setState={setState}
         />
@@ -75,7 +74,6 @@ function DetailKeyHandler({
   onEdit,
   onBack,
   setStatus,
-  touchTask,
   deleteTask,
   setState,
 }: {
@@ -83,7 +81,6 @@ function DetailKeyHandler({
   onEdit: () => void
   onBack: () => void
   setStatus: (id: string, status: 'in_progress' | 'paused' | 'completed') => Promise<void>
-  touchTask: (id: string) => Promise<void>
   deleteTask: (id: string) => Promise<void>
   setState: React.Dispatch<React.SetStateAction<import('../app.js').AppState>>
 }) {
@@ -108,11 +105,6 @@ function DetailKeyHandler({
     }
     if (input === 'c') {
       setStatus(taskId, 'completed')
-      onBack()
-      return
-    }
-    if (input === 't') {
-      touchTask(taskId)
       onBack()
       return
     }

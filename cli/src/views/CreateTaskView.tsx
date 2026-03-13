@@ -9,8 +9,8 @@ export function CreateTaskView() {
 
   return (
     <TaskForm
-      onSubmit={async (title, category, description) => {
-        await createTask(title, category, description || undefined)
+      onSubmit={async (title, category, description, tags) => {
+        await createTask(title, category, description || undefined, tags)
         setState((s) => ({ ...s, view: 'dashboard' }))
       }}
       onCancel={() => setState((s) => ({ ...s, view: 'dashboard' }))}

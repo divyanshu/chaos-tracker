@@ -25,7 +25,6 @@ export function Footer() {
       <Shortcut keys="s" label="start" />
       <Shortcut keys="p" label="pause" />
       <Shortcut keys="c" label="done" />
-      <Shortcut keys="t" label="touch" />
       <Shortcut keys="d" label="del" />
       <Shortcut keys="e" label="expand" />
       <Shortcut keys="/" label="find" />

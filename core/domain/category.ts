@@ -11,7 +11,6 @@ export type Tag = {
 }
 
 export const COMPLETED_CATEGORY_NAME = 'Completed'
-export const TOP_OF_MIND_CATEGORY_NAME = 'Top of Mind'
 
 // Workflow categories — the primary way tasks are organized day-to-day
 export const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [

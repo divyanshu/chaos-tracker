@@ -11,7 +11,6 @@ const SHORTCUTS = [
   ['s', 'Start selected task'],
   ['p', 'Pause selected task'],
   ['c', 'Complete selected task'],
-  ['t', 'Touch (update last_touched)'],
   ['d', 'Delete selected task'],
   ['e', 'Edit task (in detail view)'],
   ['f', 'Filter tasks'],

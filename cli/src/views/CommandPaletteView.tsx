@@ -11,7 +11,6 @@ const COMMANDS = [
   { name: 'start', alias: ['s'], desc: 'Start a task — start' },
   { name: 'pause', alias: ['p'], desc: 'Pause a task — pause' },
   { name: 'complete', alias: ['done', 'c'], desc: 'Complete a task — complete' },
-  { name: 'touch', alias: ['t'], desc: 'Touch a task — touch' },
   { name: 'delete', alias: ['rm', 'del'], desc: 'Delete a task — delete' },
   { name: 'filter', alias: ['f'], desc: 'Open filter view' },
   { name: 'help', alias: ['?', 'h'], desc: 'Show keyboard shortcuts' },
@@ -20,7 +19,7 @@ const COMMANDS = [
 
 export function CommandPaletteView() {
   const { state, setState } = useContext(AppStateContext)
-  const { setStatus, touchTask, deleteTask, createTask, flatTaskIds } = useTasks()
+  const { setStatus, deleteTask, createTask, flatTaskIds } = useTasks()
   const [query, setQuery] = useState('')
 
   const goBack = () => setState((s) => ({ ...s, view: 'dashboard' }))
@@ -63,11 +62,6 @@ export function CommandPaletteView() {
       case 'done':
       case 'c':
         if (selectedId) await setStatus(selectedId, 'completed')
-        goBack()
-        break
-      case 'touch':
-      case 't':
-        if (selectedId) await touchTask(selectedId)
         goBack()
         break
       case 'delete':

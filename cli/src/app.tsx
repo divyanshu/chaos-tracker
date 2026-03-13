@@ -20,6 +20,7 @@ export type AppState = {
   selectedTaskId: string | null
   filterCategories: string[]
   filterStatuses: string[]
+  filterTags: string[]
   typeaheadOpen: boolean
   completedCollapsed: boolean
 }
@@ -31,7 +32,7 @@ export const AppStateContext = React.createContext<{
 }>({
   state: {
     tasks: [], view: 'dashboard', selectedIndex: 0,
-    selectedTaskId: null, filterCategories: [], filterStatuses: [],
+    selectedTaskId: null, filterCategories: [], filterStatuses: [], filterTags: [],
     typeaheadOpen: false, completedCollapsed: true,
   },
   setState: () => {},
@@ -47,6 +48,7 @@ export function App({ repo }: { repo: TaskRepository }) {
     selectedTaskId: null,
     filterCategories: [],
     filterStatuses: [],
+    filterTags: [],
     typeaheadOpen: false,
     completedCollapsed: true,
   })

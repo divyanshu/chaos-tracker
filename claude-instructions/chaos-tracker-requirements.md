@@ -1,32 +1,6 @@
 # Chaos Tracker Requirements
 
-*Detailed requirements for the **Web (Kanban)** client — our first visualization experiment.*
-
-*See also:*
-- *`chaos-tracker-plan.md` — Implementation phases and other experiments (CLI, Canvas)*
-- *`chaos-tracker-explainer.md` — Learning context for each concept*
-
----
-
-## LandscapeView (Main Dashboard)
-
-**Reference:** See `reference-screenshots/task-dashboard-example-notion.png`
-
-### Layout
-- Kanban-style board with categories as columns
-- Each category column has:
-  - Colored header (unique color per category)
-  - Task count badge
-  - Stack of task cards
-  - "+ New task" input at bottom
-- Horizontal scrolling if columns overflow viewport
-- Minimalist, dark-mode-first design
-
-### Task Cards
-- Display task title
-- Status badge (Not Started, In Progress, Paused, Completed)
-- Visual indicator for "neglected" tasks (not touched recently)
-- Hover state reveals quick actions
+*Requirements for the CLI interface — the primary (and only active) client.*
 
 ---
 
@@ -44,7 +18,7 @@ A task has exactly **one** category, representing its urgency/workflow stage:
 | **Admin** | Stone | Routine/maintenance tasks |
 | **Flow** | Purple | Deep work, creative, no hard deadline |
 
-Users move tasks between categories as priorities shift (e.g., "Up Next" → "Urgent" when a deadline approaches).
+Users move tasks between categories as priorities shift.
 
 ### Tags (Topic Labels)
 A task has **zero or more** tags describing its life area:
@@ -58,173 +32,189 @@ A task has **zero or more** tags describing its life area:
 | Hobby | Lavender |
 | Rejuvenate | Teal |
 
-Tags are optional and used for filtering/visual context, not primary grouping.
+Tags are optional — used for filtering and visual context, not primary grouping.
 
-### Special System Categories
-- **Completed** — Tasks with `status === 'completed'` migrate here on launch
-- **Top of Mind** — Virtual category showing tasks touched within 7 days
+### Special System Category
+- **Completed** — Tasks with `status === 'completed'` migrate here on app launch. Rendered at bottom, collapsible.
 
 ---
 
-## Task Filtering
+## CLI Dashboard
 
-- Filter by category (workflow buckets: Urgent, Up Next, Admin, Flow)
-- Filter by status (e.g., hide completed tasks)
-- Filter by tag (planned — not yet implemented)
-- Filters persist in URL or local storage
+### Layout
+- Header (ASCII art)
+- Workflow category groups: Urgent → Up Next → Admin → Flow
+- Completed category at the bottom (collapsible, hidden when empty)
+- Footer with keyboard shortcut hints
+- Type-ahead panel renders inline between header and categories when active
+
+### Task Rows
+Each row shows:
+- Selection indicator (`▸`) when focused
+- Status badge (●/○/◐)
+- Task title
+- Tag chips (colored, right-aligned)
+- Status label
+- Relative time since creation
+- Neglect indicator (`!` at 7 days, `!!` at 14 days)
+
+### Completed Tasks
+- Dimmed (Stone-600 color) in regular category views
+- Neglect indicators hidden for completed tasks
+- Sort to bottom within each category during a session
+- Migrated to Completed system category on next app launch
+- Completed category collapses by default; `e` toggles
+
+---
+
+## Task CRUD
+
+| Operation | How |
+|-----------|-----|
+| Create | `n` → TaskForm (title → category → description → tags → confirm), or `/` type-ahead |
+| Read | Loaded on launch from Supabase or mock data |
+| Update | Enter on selected task → detail view → `e` → TaskForm pre-filled |
+| Delete | `d` on selected task (dashboard), or `d` in detail view |
 
 ---
 
 ## Quick Status Actions
 
-Actions available on task cards:
-- **Start**: Move from pending → in_progress
-- **Pause**: Move from in_progress → paused
-- **Resume**: Move from paused → in_progress
-- **Complete**: Move to completed status
-- **Touch**: Update `last_touched` without changing status
+| Key | Action |
+|-----|--------|
+| `s` | Start (→ in_progress) |
+| `p` | Pause (→ paused) |
+| `c` | Complete (→ completed) |
+
+Available in: dashboard (on selected task), type-ahead results zone, task detail view.
 
 ---
 
-## Touch Functionality
+## Type-Ahead Rapid Entry (`/`)
 
-- "Touching" a task updates its `last_touched` timestamp
-- Purpose: Acknowledge a task exists without starting/completing it
-- Use case: Recurring tasks, tasks you're aware of but not acting on
-- Visual feedback: Brief animation or highlight on touch
+Single inline input unifying search and create.
 
----
+**Searching mode:**
+- Fuzzy search against all task titles (live as you type)
+- Results show: status badge, highlighted title, category (colored), relative time, neglect indicator
+- `↑`/`↓` navigates between input zone and results zone
+- `s`/`p`/`c` performs quick status action on selected result (in results zone)
+- `Enter` opens selected task detail
+- `Tab` transitions to creating mode with current text as title
+- `Esc` dismisses
 
-## Task CRUD Operations
-
-| Operation | Trigger |
-|-----------|---------|
-| Create | "+ New task" input at column bottom, or keyboard shortcut |
-| Read | Tasks load on page load, grouped by category |
-| Update | Click task to open detail view/modal, edit fields |
-| Delete | Delete button in task detail view (with confirmation) |
-
----
-
-## Rejuvenation Logging
-
-- Separate view/route (`/rejuvenate`)
-- Log rejuvenation activities (rest, recharge)
-- Track rejuvenation history
-- (Details TBD based on database schema)
+**Creating mode:**
+- `←`/`→` cycles workflow category
+- `↓`/`Tab` moves focus to tags row; `↑` goes back
+- In tags row: `←`/`→` cycles tag focus, `Space` toggles tag
+- `Enter` creates task and shows 1s confirmation flash
+- `Esc` goes back to searching
 
 ---
 
-## Keyboard Shortcuts
+## Filter View (`f`)
 
-| Key | Action | Context |
-|-----|--------|---------|
-| `Enter` | Create new task | When in task input field |
-| `Space` | Toggle task status | When task is focused |
-| `Tab` | Move focus to next task | Global |
-| `Shift+Tab` | Move focus to previous task | Global |
-| `t` | Touch focused task | When task is focused |
+Three filter sections:
+1. **Categories** — multi-select from Urgent, Up Next, Admin, Flow
+2. **Statuses** — multi-select from Pending, In Progress, Paused, Completed
+3. **Tags** — multi-select from all default tags
 
-### Focus Management
-- Tasks are focusable (tabindex)
-- Visual focus indicator (outline/ring)
-- Focus follows logical order (left-to-right, top-to-bottom)
+Navigation: `j`/`k`, `Space` toggles, `Enter`/`Esc` applies and goes back, `r` resets all.
+
+Filters are combined with AND logic (category AND status AND any matching tag).
 
 ---
 
-## Visual Design Notes
+## Command Palette (`:`)
 
-From the reference screenshot:
-- Dark background (#1a1a1a or similar)
-- Category colors: soft, muted tones (not neon)
-- Status badges: pill-shaped, subtle colors
-- Cards: rounded corners, subtle shadow/border
-- Typography: clean, readable, good contrast
+Text command input with autocomplete list. Commands:
+- `add <title>` / `new` / `create` — create task (with title inline or open form)
+- `start` / `s` — start selected task
+- `pause` / `p` — pause selected task
+- `complete` / `done` / `c` — complete selected task
+- `delete` / `rm` / `del` — delete selected task
+- `filter` / `f` — open filter view
+- `help` / `?` / `h` — show keyboard shortcuts
+- `quit` / `exit` / `q` — exit
 
 ---
 
-## CLI Requirements
+## CLI Keyboard Shortcuts
 
-### First-Run Onboarding
+### Dashboard
+| Key | Action |
+|-----|--------|
+| `j` / `↓` | Move down |
+| `k` / `↑` | Move up |
+| `Enter` | Open task detail |
+| `n` | Create new task |
+| `s` | Start selected task |
+| `p` | Pause selected task |
+| `c` | Complete selected task |
+| `d` | Delete selected task |
+| `e` | Expand/collapse Completed category |
+| `/` | Open type-ahead search/create |
+| `:` | Open command palette |
+| `f` | Open filter view |
+| `?` | Show help |
+| `q` | Quit |
 
-When the CLI launches with no Supabase credentials configured:
-1. Show welcome message with project name
-2. Display config file path (`~/.config/chaos-tracker/.env`)
-3. Prompt for Supabase URL (with placeholder hint)
-4. Prompt for Supabase Anon Key (with placeholder hint)
-5. Show confirmation step with URL in full and key masked (first 8 + last 4 chars)
-6. On confirm: save to disk (`chmod 600`), apply to env, launch main app
-7. On reject: restart from URL step
-8. Show tip: "Run with --mock to try without Supabase"
+### Task Detail View
+| Key | Action |
+|-----|--------|
+| `e` | Edit task |
+| `s` / `p` / `c` | Status actions |
+| `d` | Delete task |
+| `Esc` | Back to dashboard |
 
-### `chaos config` Command
+### Config View
+| Key | Action |
+|-----|--------|
+| `e` | Edit credentials |
+| `q` / `Esc` | Exit |
+
+---
+
+## First-Run Onboarding
+
+On launch with no credentials:
+1. Welcome message + config file path (`~/.config/chaos-tracker/.env`)
+2. Prompt for Supabase Project URL
+3. Prompt for Supabase Anon Key
+4. Confirmation step (URL in full, key masked to first 8 + last 4 chars)
+5. On confirm: save to disk (chmod 600), apply to env, launch app
+6. On reject: restart from URL step
+7. Tip: "Run with --mock to try without Supabase"
+
+---
+
+## `chaos config` Command
 
 View and edit stored credentials:
-1. Show current Supabase URL (or "(not set)")
-2. Show current Anon Key masked (or "(not set)")
-3. `e` to enter edit mode (URL → Key → save)
-4. `q`/`Esc` to exit
-5. After save: show "Saved successfully." flash, auto-exit after 1s
-
-### CLI Boot Sequence
-
-Priority order:
-1. `chaos config` — render config view, exit
-2. `chaos --mock` — use MockTaskRepository, skip credential checks
-3. Env vars present — use SupabaseTaskRepository, launch app
-4. No env vars — render onboarding wizard
-
-### CLI Keyboard Shortcuts
-
-| Key | Action | Context |
-|-----|--------|---------|
-| `j`/`k` or `↑`/`↓` | Navigate tasks | Dashboard |
-| `n` | New task | Dashboard |
-| `s` | Start task | Dashboard (selected task) |
-| `p` | Pause task | Dashboard (selected task) |
-| `c` | Complete task | Dashboard (selected task) |
-| `t` | Touch task | Dashboard (selected task) |
-| `d` | Delete task | Dashboard (selected task) |
-| `e` | Expand/collapse Completed category | Dashboard |
-| `/` | Open type-ahead search/create | Dashboard |
-| `:` | Open command palette | Dashboard |
-| `f` | Open filter view | Dashboard |
-| `?` | Show help | Dashboard |
-| `q` | Quit | Dashboard |
-| `e` | Edit credentials | Config view |
-| `Enter`/`y` | Confirm | Onboarding confirm step |
-| `Esc`/`n` | Restart/cancel | Onboarding confirm step |
+1. Show current URL (or "(not set)") and masked key (or "(not set)")
+2. `e` → edit mode: URL → Key → save → "Saved." flash → auto-exit after 1s
+3. `q`/`Esc` → exit
 
 ---
 
-## CLI Dashboard Features
+## Supabase Schema
 
-### Top of Mind
-- Virtual category rendered at the top of the dashboard
-- Shows tasks touched within the last 7 days that are not completed
-- Sorted by `last_touched` descending (most recent first)
-- View-only — tasks are not navigable here (they remain navigable in their real categories)
-- Ignores active category/status filters (always computed from the full task list)
-- Hidden when empty
+```sql
+create table public.tasks (
+  id text primary key default (gen_random_uuid())::text,
+  title text,
+  category text,
+  tags text[] not null default '{}',
+  status text default 'pending',
+  description text,
+  last_touched timestamptz default now(),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+```
 
-### Completed Tasks
-- Completed tasks are visually dimmed (Stone-600 color) with neglect indicators hidden
-- Within regular categories, completed tasks sort to the bottom
-- On app launch, tasks with `status === 'completed'` are migrated to a dedicated "Completed" system category
-- During a session, just-completed tasks stay in their original category (dimmed, at bottom); they migrate on next launch
-
-### Completed Category
-- System category rendered at the bottom of the dashboard, below all regular categories
-- Collapsed by default — shows header with `[+]` indicator and task count only
-- `e` key toggles expand/collapse
-- When expanded: shows `[-]` in header, tasks are included in keyboard navigation
-- When collapsed: tasks are excluded from keyboard navigation
-- Hidden when empty (no completed tasks)
-
-### Empty Category Handling
-- Categories with 0 tasks are hidden from the dashboard (including Top of Mind and Completed)
-
+RLS: open access via anon key (personal/dev use).
 
 ---
 
-*Last updated: 2026-03-11*
+*Last updated: 2026-03-13*

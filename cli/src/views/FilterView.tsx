@@ -1,8 +1,8 @@
 import React, { useState, useContext } from 'react'
 import { Box, Text, useInput, useStdin } from 'ink'
-import { colors, categoryColor } from '../theme/colors.js'
+import { colors, categoryColor, tagColor } from '../theme/colors.js'
 import { AppStateContext } from '../app.js'
-import { DEFAULT_CATEGORIES } from '#core/domain/category.js'
+import { DEFAULT_CATEGORIES, DEFAULT_TAGS } from '#core/domain/category.js'
 import type { TaskStatus } from '#core/domain/task.js'
 
 const STATUSES: { value: TaskStatus; label: string }[] = [
@@ -12,7 +12,10 @@ const STATUSES: { value: TaskStatus; label: string }[] = [
   { value: 'completed', label: 'Completed' },
 ]
 
-type FilterItem = { type: 'category'; value: string } | { type: 'status'; value: string }
+type FilterItem =
+  | { type: 'category'; value: string }
+  | { type: 'status'; value: string }
+  | { type: 'tag'; value: string }
 
 export function FilterView() {
   const { state, setState } = useContext(AppStateContext)
@@ -23,11 +26,15 @@ export function FilterView() {
   const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(
     new Set(state.filterStatuses)
   )
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(
+    new Set(state.filterTags)
+  )
   const { isRawModeSupported } = useStdin()
 
   const items: FilterItem[] = [
     ...DEFAULT_CATEGORIES.map((c) => ({ type: 'category' as const, value: c.name })),
     ...STATUSES.map((s) => ({ type: 'status' as const, value: s.value })),
+    ...DEFAULT_TAGS.map((t) => ({ type: 'tag' as const, value: t.name })),
   ]
 
   const goBack = () => {
@@ -36,6 +43,7 @@ export function FilterView() {
       view: 'dashboard',
       filterCategories: Array.from(selectedCategories),
       filterStatuses: Array.from(selectedStatuses),
+      filterTags: Array.from(selectedTags),
     }))
   }
 
@@ -47,8 +55,15 @@ export function FilterView() {
         else next.add(item.value)
         return next
       })
-    } else {
+    } else if (item.type === 'status') {
       setSelectedStatuses((prev) => {
+        const next = new Set(prev)
+        if (next.has(item.value)) next.delete(item.value)
+        else next.add(item.value)
+        return next
+      })
+    } else {
+      setSelectedTags((prev) => {
         const next = new Set(prev)
         if (next.has(item.value)) next.delete(item.value)
         else next.add(item.value)
@@ -98,6 +113,24 @@ export function FilterView() {
         })}
       </Box>
 
+      <Box paddingLeft={2} marginTop={1}>
+        <Text>{colors.dim('Tags')}</Text>
+      </Box>
+      <Box flexDirection="column" paddingLeft={3}>
+        {DEFAULT_TAGS.map((tag, i) => {
+          const idx = DEFAULT_CATEGORIES.length + STATUSES.length + i
+          const isActive = cursorIdx === idx
+          const isChecked = selectedTags.has(tag.name)
+          return (
+            <Box key={tag.name} gap={1}>
+              <Text>{isActive ? colors.accent('\u25b8') : ' '}</Text>
+              <Text>{isChecked ? colors.accent('[\u2713]') : colors.dim('[ ]')}</Text>
+              <Text>{tagColor(tag.name)(tag.name)}</Text>
+            </Box>
+          )
+        })}
+      </Box>
+
       <Box paddingLeft={2} marginTop={1} gap={2}>
         <Text>{colors.dim('Space:toggle  Enter/Esc:apply & back  r:reset')}</Text>
       </Box>
@@ -112,6 +145,7 @@ export function FilterView() {
           onReset={() => {
             setSelectedCategories(new Set())
             setSelectedStatuses(new Set())
+            setSelectedTags(new Set())
           }}
         />
       )}

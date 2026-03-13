@@ -19,7 +19,7 @@ export function useKeyboardNav(flatTaskIds: string[]) {
   const { state, setState } = useContext(AppStateContext)
 
   const selectedTaskId = useSelectedTask(flatTaskIds)
-  const { setStatus, touchTask, deleteTask } = useTasks()
+  const { setStatus, deleteTask } = useTasks()
 
   const moveSelection = useCallback(
     (delta: number) => {
@@ -61,11 +61,6 @@ export function useKeyboardNav(flatTaskIds: string[]) {
       setStatus(selectedTaskId, 'completed')
       return
     }
-    if (input === 't') {
-      touchTask(selectedTaskId)
-      return
-    }
-
     // View changes
     if (input === 'n') {
       setState((s) => ({ ...s, view: 'create' }))

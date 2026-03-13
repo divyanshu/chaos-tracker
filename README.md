@@ -1,32 +1,37 @@
 # Chaos Tracker
 
-A minimalist, keyboard-first task tracker for the terminal. Built with Ink 5 (React for CLIs) and backed by Supabase (PostgreSQL). Tasks are organized by category, managed through keyboard shortcuts, and surfaced with features like "Top of Mind" (recently touched tasks) and neglect warnings. The design philosophy: show tasks when needed, otherwise stay out of the way.
+A minimalist, keyboard-first task tracker for the terminal. Built with Ink 5 (React for CLIs) and backed by Supabase (PostgreSQL).
+
+Tasks are organized by **workflow category** (Urgent, Up Next, Admin, Flow) and optional **tags** (Work, Personal, Chores, etc.). The philosophy: show what matters, stay out of the way.
 
 ## Features
 
-- **Terminal-native dashboard** -- tasks grouped by category, navigated entirely by keyboard
-- **Type-ahead quick entry** (`/`) -- fuzzy search existing tasks or create new ones inline, no view switching
-- **Command palette** (`:`) -- quick actions on tasks
-- **Touch system** -- acknowledge a task without changing its status; neglected tasks get visual warnings
-- **Top of Mind** -- automatically surfaces tasks you've touched in the last 7 days
-- **Collapsible Completed category** -- completed tasks stay out of the way until you need them
-- **First-run onboarding** -- interactive wizard walks you through Supabase setup on first launch
-- **Mock mode** (`--mock`) -- try it out with in-memory data, no database needed
+- **Terminal-native dashboard** — tasks grouped by workflow category, navigated entirely by keyboard
+- **Type-ahead quick entry** (`/`) — fuzzy search existing tasks or create new ones inline
+- **Tags** — assign topic labels to tasks; filter by tag in the filter view
+- **Command palette** (`:`) — text-based quick actions
+- **Filter view** (`f`) — filter by category, status, or tag
+- **Collapsible Completed category** — completed tasks stay out of the way until needed
+- **First-run onboarding** — interactive wizard walks you through Supabase setup
+- **Mock mode** (`--mock`) — try it out with in-memory data, no database needed
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │ chaos-tracker                                    [?] help│
 ├─────────────────────────────────────────────────────────┤
-│ WORK (3)                                                │
-│   ● Review PR #42                          [in progress]│
-│   ○ Update documentation                      [pending] │
-│   ○ Fix login bug                             [pending] │
+│ Urgent (2)                                              │
+│ ▸ ● Review quarterly OKRs            Work   in progress │
+│   ○ Fix production bug               Work      pending  │
 │                                                         │
-│ PERSONAL (2)                                            │
-│   ○ Call dentist                              [pending] │
-│   ◐ Plan weekend trip                          [paused] │
+│ Up Next (3)                                             │
+│   ○ Grocery shopping                Chores    pending   │
+│   ○ Read design feedback             Work     pending   │
+│   ◐ Plan weekend trip             Personal    paused    │
+│                                                         │
+│ Flow (1)                                                │
+│   ○ Write blog post                  Work     pending   │
 ├─────────────────────────────────────────────────────────┤
-│ > _                                                     │
+│ j/k:nav  n:new  s:start  p:pause  c:done  d:del  /:find │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -36,7 +41,7 @@ A minimalist, keyboard-first task tracker for the terminal. Built with Ink 5 (Re
 
 ### Prerequisites
 
-- Node.js 18+ and npm
+- Node.js 18+
 
 ### 1. Clone and install
 
@@ -59,70 +64,47 @@ npm link          # Install globally as `chaos`
 chaos --mock      # Launch with in-memory mock data (no Supabase needed)
 ```
 
-This lets you explore the full UI without any database setup. When you're ready to persist your tasks, follow the Supabase setup below.
+When you're ready to persist tasks, follow the Supabase setup below.
 
 ---
 
-## Supabase Setup (for persistent storage)
+## Supabase Setup
 
-### 1. Create a Supabase project
+### 1. Create a project
 
-1. Sign up at [supabase.com](https://supabase.com) (free tier, no credit card required)
-2. Click **New Project**, pick a name and region, set a database password
-3. Wait for the project to finish provisioning (~30 seconds)
+Sign up at [supabase.com](https://supabase.com), create a new project.
 
-### 2. Set up the database schema
+### 2. Run the schema
 
-Go to your Supabase project's **SQL Editor** (left sidebar) and run this query:
+In the Supabase SQL Editor:
 
 ```sql
--- Tasks table
 create table if not exists public.tasks (
   id text primary key default (gen_random_uuid())::text,
   title text,
   category text,
+  tags text[] not null default '{}',
   status text default 'pending',
   description text,
-  recurring boolean default false,
   last_touched timestamptz default now(),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
--- Rejuvenation log
-create table if not exists public.rejuvenation_log (
-  id bigint generated by default as identity primary key,
-  date date default now(),
-  notes text
-);
-
--- RLS policies (allow all access via anon key -- fine for personal/dev use)
 alter table public.tasks enable row level security;
-alter table public.rejuvenation_log enable row level security;
-
 create policy "Allow all access" on public.tasks for all to anon using (true) with check (true);
-create policy "Allow all access" on public.rejuvenation_log for all to anon using (true) with check (true);
 ```
 
-You should see "Success. No rows returned" -- that means it worked.
-
-### 3. Launch and connect
+### 3. Connect
 
 ```bash
 chaos
 ```
 
-On first run, the CLI detects that no credentials are configured and launches an interactive onboarding wizard. It will ask you for:
-
-1. Your **Supabase Project URL** (found in Settings > API)
-2. Your **anon/public key** (found in Settings > API)
-
-Credentials are saved to `~/.config/chaos-tracker/.env` (with `chmod 600`). After setup, the app launches and connects to your database.
-
-To edit credentials later:
+On first run the CLI launches an interactive setup wizard asking for your Supabase Project URL and anon key (both found in Settings → API). Credentials are saved to `~/.config/chaos-tracker/.env`.
 
 ```bash
-chaos config
+chaos config      # View or edit credentials later
 ```
 
 ---
@@ -132,7 +114,7 @@ chaos config
 ```bash
 chaos             # Launch (onboarding wizard on first run)
 chaos config      # View or edit stored Supabase credentials
-chaos --mock      # Run with in-memory mock data (no Supabase needed)
+chaos --mock      # Run with in-memory mock data
 ```
 
 ### Keyboard Shortcuts
@@ -141,10 +123,9 @@ chaos --mock      # Run with in-memory mock data (no Supabase needed)
 |-----|--------|
 | `j` / `k` or arrows | Navigate tasks |
 | `n` | New task |
-| `s` / `p` / `c` | Start / pause / complete task |
-| `t` | Touch task (resets neglect timer) |
+| `s` / `p` / `c` | Start / pause / complete |
 | `d` | Delete task |
-| `e` | Expand/collapse Completed category |
+| `e` | Expand/collapse Completed |
 | `/` | Type-ahead search + create |
 | `:` | Command palette |
 | `f` | Filter view |
@@ -155,45 +136,34 @@ chaos --mock      # Run with in-memory mock data (no Supabase needed)
 
 ## Development
 
-For development without rebuilding on every change:
-
 ```bash
 cd cli
-npm run dev       # Runs with tsx (live TypeScript execution)
+npm run dev       # Run with tsx (no rebuild needed)
+npm run build     # Build with tsup
 ```
 
 ### Architecture
 
-The codebase separates platform-agnostic logic from UI so the same core can power multiple clients:
-
 ```
 chaos-tracker/
 ├── core/                  Shared domain layer (no UI dependencies)
-│   ├── domain/            Task, TaskStatus, Category types
+│   ├── domain/            Task, TaskStatus, Category, Tag types
 │   ├── repositories/      TaskRepository interface
 │   └── services/          Fuzzy search, palette actions
-├── cli/                   Primary interface (Ink 5 + Supabase)
-│   ├── src/views/         Dashboard, onboarding, config, task detail
-│   ├── src/hooks/         Navigation, type-ahead, task grouping
-│   ├── src/components/    Category groups, panels, task rows
-│   └── src/utils/         Config file management, time formatting
-└── experiments/web/       Archived web client (React 18 + Vite + ShadCN)
+└── cli/                   The app (Ink 5 + Supabase)
+    ├── src/views/         Dashboard, detail, filter, help, command palette
+    ├── src/hooks/         Navigation, type-ahead state, task grouping
+    ├── src/components/    Category groups, task rows, type-ahead input
+    ├── src/infrastructure/ Supabase + mock repositories
+    └── src/utils/         Config file management, time formatting
 ```
 
 The CLI imports `core/` via a `#core` path alias, bundled by tsup at build time.
 
-**Data flow:** Ink UI -> React hooks -> TaskRepository interface -> Supabase
-
-### Tech Stack
-
-Node.js, TypeScript, Ink 5, @inkjs/ui, chalk 5, tsup, Supabase
+**Stack:** Node.js · TypeScript · Ink 5 · @inkjs/ui · chalk 5 · tsup · Supabase
 
 ---
 
-## Web Client (archived)
-
-An earlier web experiment (React 18 + Vite + ShadCN kanban board) lives in `experiments/web/`. It's feature-complete but not actively developed -- the CLI is the current focus. See `experiments/web/` if you're curious.
-
 ## License
 
-Private -- not for redistribution.
+MIT

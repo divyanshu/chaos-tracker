@@ -1,18 +1,19 @@
 import React, { useState } from 'react'
 import { Box, Text, useInput, useStdin } from 'ink'
 import { TextInput } from '@inkjs/ui'
-import { DEFAULT_CATEGORIES } from '#core/domain/category.js'
-import { colors, categoryColor } from '../../theme/colors.js'
+import { DEFAULT_CATEGORIES, DEFAULT_TAGS } from '#core/domain/category.js'
+import { colors, categoryColor, tagColor } from '../../theme/colors.js'
 
 type TaskFormProps = {
-  onSubmit: (title: string, category: string, description: string) => void
+  onSubmit: (title: string, category: string, description: string, tags: string[]) => void
   onCancel: () => void
   initialTitle?: string
   initialCategory?: string
   initialDescription?: string
+  initialTags?: string[]
 }
 
-type FormStep = 'title' | 'category' | 'description' | 'confirm'
+type FormStep = 'title' | 'category' | 'description' | 'tags' | 'confirm'
 
 export function TaskForm({
   onSubmit,
@@ -20,6 +21,7 @@ export function TaskForm({
   initialTitle = '',
   initialCategory = DEFAULT_CATEGORIES[0].name,
   initialDescription = '',
+  initialTags = [],
 }: TaskFormProps) {
   const [step, setStep] = useState<FormStep>('title')
   const [title, setTitle] = useState(initialTitle)
@@ -27,6 +29,7 @@ export function TaskForm({
     DEFAULT_CATEGORIES.findIndex((c) => c.name === initialCategory)
   )
   const [description, setDescription] = useState(initialDescription)
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set(initialTags))
   const { isRawModeSupported } = useStdin()
 
   const category = DEFAULT_CATEGORIES[categoryIdx >= 0 ? categoryIdx : 0].name
@@ -56,7 +59,7 @@ export function TaskForm({
       </Box>
 
       {/* Category */}
-      {(step === 'category' || step === 'description' || step === 'confirm') && (
+      {(step === 'category' || step === 'description' || step === 'tags' || step === 'confirm') && (
         <Box paddingLeft={2} gap={1}>
           <Text>{step === 'category' ? colors.accent('\u25b8') : ' '}</Text>
           <Text>{colors.dim('Category:')}</Text>
@@ -76,7 +79,7 @@ export function TaskForm({
       )}
 
       {/* Description */}
-      {(step === 'description' || step === 'confirm') && (
+      {(step === 'description' || step === 'tags' || step === 'confirm') && (
         <Box paddingLeft={2} gap={1}>
           <Text>{step === 'description' ? colors.accent('\u25b8') : ' '}</Text>
           <Text>{colors.dim('Description:')}</Text>
@@ -85,7 +88,7 @@ export function TaskForm({
               defaultValue={description}
               onSubmit={(value) => {
                 setDescription(value.trim())
-                setStep('confirm')
+                setStep('tags')
               }}
             />
           ) : (
@@ -94,10 +97,32 @@ export function TaskForm({
         </Box>
       )}
 
+      {/* Tags */}
+      {(step === 'tags' || step === 'confirm') && (
+        <Box paddingLeft={2} gap={1}>
+          <Text>{step === 'tags' ? colors.accent('\u25b8') : ' '}</Text>
+          <Text>{colors.dim('Tags:')}</Text>
+          {step === 'tags' ? (
+            <TagSelector
+              selected={selectedTags}
+              onChange={setSelectedTags}
+              onConfirm={() => setStep('confirm')}
+              onCancel={onCancel}
+            />
+          ) : (
+            <Text>
+              {selectedTags.size > 0
+                ? Array.from(selectedTags).map((t) => tagColor(t)(t)).join(colors.dim(', '))
+                : colors.muted('(none)')}
+            </Text>
+          )}
+        </Box>
+      )}
+
       {/* Confirm */}
       {step === 'confirm' && isRawModeSupported && (
         <ConfirmStep
-          onConfirm={() => onSubmit(title, category, description)}
+          onConfirm={() => onSubmit(title, category, description, Array.from(selectedTags))}
           onCancel={onCancel}
         />
       )}
@@ -150,6 +175,65 @@ function CategorySelector({
           </Text>
         )
       })}
+    </Box>
+  )
+}
+
+function TagSelector({
+  selected,
+  onChange,
+  onConfirm,
+  onCancel,
+}: {
+  selected: Set<string>
+  onChange: (tags: Set<string>) => void
+  onConfirm: () => void
+  onCancel: () => void
+}) {
+  const [idx, setIdx] = useState(0)
+
+  useInput((input, key) => {
+    if (key.escape) {
+      onCancel()
+      return
+    }
+    if (key.return) {
+      onConfirm()
+      return
+    }
+    if (input === 'j' || key.downArrow) {
+      setIdx((i) => Math.min(i + 1, DEFAULT_TAGS.length - 1))
+      return
+    }
+    if (input === 'k' || key.upArrow) {
+      setIdx((i) => Math.max(i - 1, 0))
+      return
+    }
+    if (input === ' ') {
+      const tag = DEFAULT_TAGS[idx].name
+      const next = new Set(selected)
+      if (next.has(tag)) next.delete(tag)
+      else next.add(tag)
+      onChange(next)
+    }
+  })
+
+  return (
+    <Box flexDirection="column">
+      {DEFAULT_TAGS.map((tag, i) => {
+        const isActive = i === idx
+        const isChecked = selected.has(tag.name)
+        return (
+          <Box key={tag.name} gap={1}>
+            <Text>{isActive ? colors.accent('\u25b8') : ' '}</Text>
+            <Text>{isChecked ? colors.accent('[\u2713]') : colors.dim('[ ]')}</Text>
+            <Text>{tagColor(tag.name)(tag.name)}</Text>
+          </Box>
+        )
+      })}
+      <Box marginTop={1}>
+        <Text>{colors.dim('j/k:move  Space:toggle  Enter:confirm')}</Text>
+      </Box>
     </Box>
   )
 }

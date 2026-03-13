@@ -1,9 +1,10 @@
 import { useReducer, useCallback } from 'react'
 import type { Task } from '#core/domain/task.js'
 import { searchTasks, type SearchResult } from '#core/services/fuzzy-search.js'
-import { DEFAULT_CATEGORIES } from '#core/domain/category.js'
+import { DEFAULT_CATEGORIES, DEFAULT_TAGS } from '#core/domain/category.js'
 
 export type TypeAheadMode = 'searching' | 'creating' | 'confirmed'
+export type CreateFocusRow = 'category' | 'tags'
 
 export type TypeAheadState = {
   mode: TypeAheadMode
@@ -12,6 +13,9 @@ export type TypeAheadState = {
   selectedResultIdx: number
   inputFocused: boolean
   categoryIdx: number
+  createFocusRow: CreateFocusRow
+  tagFocusIdx: number
+  selectedTags: string[]
   createdTaskTitle: string
   createdTaskCategory: string
 }
@@ -24,6 +28,10 @@ type Action =
   | { type: 'BACK_TO_SEARCH' }
   | { type: 'START_CREATE' }
   | { type: 'CYCLE_CATEGORY'; delta: number }
+  | { type: 'FOCUS_TAGS_ROW' }
+  | { type: 'BACK_TO_CATEGORY_ROW' }
+  | { type: 'CYCLE_TAG_FOCUS'; delta: number }
+  | { type: 'TOGGLE_TAG' }
   | { type: 'CONFIRM_CREATE'; title: string; category: string }
   | { type: 'RESET' }
 
@@ -34,6 +42,9 @@ const INITIAL_STATE: TypeAheadState = {
   selectedResultIdx: 0,
   inputFocused: true,
   categoryIdx: 0,
+  createFocusRow: 'category',
+  tagFocusIdx: 0,
+  selectedTags: [],
   createdTaskTitle: '',
   createdTaskCategory: '',
 }
@@ -57,7 +68,6 @@ function reducer(state: TypeAheadState, action: Action): TypeAheadState {
       if (maxIdx < 0) return state
       let next = state.selectedResultIdx + action.delta
       if (next < 0) {
-        // Moving up past first result — refocus input
         return { ...state, selectedResultIdx: 0, inputFocused: true }
       }
       if (next > maxIdx) next = maxIdx
@@ -78,6 +88,9 @@ function reducer(state: TypeAheadState, action: Action): TypeAheadState {
         ...state,
         mode: 'creating',
         categoryIdx: 0,
+        createFocusRow: 'category',
+        tagFocusIdx: 0,
+        selectedTags: [],
       }
 
     case 'CYCLE_CATEGORY': {
@@ -86,6 +99,29 @@ function reducer(state: TypeAheadState, action: Action): TypeAheadState {
       if (next < 0) next = len - 1
       if (next >= len) next = 0
       return { ...state, categoryIdx: next }
+    }
+
+    case 'FOCUS_TAGS_ROW':
+      return { ...state, createFocusRow: 'tags' }
+
+    case 'BACK_TO_CATEGORY_ROW':
+      return { ...state, createFocusRow: 'category' }
+
+    case 'CYCLE_TAG_FOCUS': {
+      const len = DEFAULT_TAGS.length
+      let next = state.tagFocusIdx + action.delta
+      if (next < 0) next = len - 1
+      if (next >= len) next = 0
+      return { ...state, tagFocusIdx: next }
+    }
+
+    case 'TOGGLE_TAG': {
+      const tag = DEFAULT_TAGS[state.tagFocusIdx].name
+      const has = state.selectedTags.includes(tag)
+      const next = has
+        ? state.selectedTags.filter((t) => t !== tag)
+        : [...state.selectedTags, tag]
+      return { ...state, selectedTags: next }
     }
 
     case 'CONFIRM_CREATE':
@@ -120,13 +156,17 @@ export function useTypeahead(tasks: Task[]) {
   const focusInput = useCallback(() => dispatch({ type: 'FOCUS_INPUT' }), [])
   const blurInput = useCallback(() => dispatch({ type: 'BLUR_INPUT' }), [])
   const backToSearch = useCallback(() => dispatch({ type: 'BACK_TO_SEARCH' }), [])
-
   const startCreate = useCallback(() => dispatch({ type: 'START_CREATE' }), [])
 
   const cycleCategory = useCallback(
     (delta: number) => dispatch({ type: 'CYCLE_CATEGORY', delta }),
     [],
   )
+
+  const focusTagsRow = useCallback(() => dispatch({ type: 'FOCUS_TAGS_ROW' }), [])
+  const backToCategoryRow = useCallback(() => dispatch({ type: 'BACK_TO_CATEGORY_ROW' }), [])
+  const cycleTagFocus = useCallback((delta: number) => dispatch({ type: 'CYCLE_TAG_FOCUS', delta }), [])
+  const toggleTag = useCallback(() => dispatch({ type: 'TOGGLE_TAG' }), [])
 
   const confirmCreate = useCallback(
     (title: string, category: string) =>
@@ -136,7 +176,6 @@ export function useTypeahead(tasks: Task[]) {
 
   const reset = useCallback(() => dispatch({ type: 'RESET' }), [])
 
-  // Initialize results on first render (empty query shows recent tasks)
   const initResults = useCallback(() => {
     dispatch({ type: 'SET_QUERY', query: '', tasks })
   }, [tasks])
@@ -150,6 +189,10 @@ export function useTypeahead(tasks: Task[]) {
     backToSearch,
     startCreate,
     cycleCategory,
+    focusTagsRow,
+    backToCategoryRow,
+    cycleTagFocus,
+    toggleTag,
     confirmCreate,
     reset,
     initResults,

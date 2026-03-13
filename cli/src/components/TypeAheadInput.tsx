@@ -1,14 +1,14 @@
 import React, { useEffect, useContext, useCallback } from 'react'
 import { Box, Text, useInput, useStdin } from 'ink'
 import { TextInput } from '@inkjs/ui'
-import { colors, categoryColor } from '../theme/colors.js'
+import { colors, categoryColor, tagColor } from '../theme/colors.js'
 import { termWidth } from '../utils/terminal.js'
 import { useTypeahead } from '../hooks/use-typeahead.js'
 import { useTasks } from '../hooks/use-tasks.js'
 import { AppStateContext } from '../app.js'
 import { StatusBadge } from './task/StatusBadge.js'
 import { relativeTime, neglectIndicator } from '../utils/time.js'
-import { DEFAULT_CATEGORIES } from '#core/domain/category.js'
+import { DEFAULT_CATEGORIES, DEFAULT_TAGS } from '#core/domain/category.js'
 import type { SearchResult } from '#core/services/fuzzy-search.js'
 
 type TypeAheadInputProps = {
@@ -17,7 +17,7 @@ type TypeAheadInputProps = {
 
 export function TypeAheadInput({ onClose }: TypeAheadInputProps) {
   const { isRawModeSupported } = useStdin()
-  const { tasks, setStatus, touchTask, createTask, refresh } = useTasks()
+  const { tasks, setStatus, createTask, refresh } = useTasks()
   const { setState } = useContext(AppStateContext)
   const {
     state: ta,
@@ -27,6 +27,10 @@ export function TypeAheadInput({ onClose }: TypeAheadInputProps) {
     backToSearch,
     startCreate,
     cycleCategory,
+    focusTagsRow,
+    backToCategoryRow,
+    cycleTagFocus,
+    toggleTag,
     confirmCreate,
     reset,
     initResults,
@@ -53,10 +57,10 @@ export function TypeAheadInput({ onClose }: TypeAheadInputProps) {
     const title = ta.query.trim()
     if (!title) return
     const category = DEFAULT_CATEGORIES[ta.categoryIdx].name
-    await createTask(title, category)
+    await createTask(title, category, undefined, ta.selectedTags)
     await refresh()
     confirmCreate(title, category)
-  }, [ta.query, ta.categoryIdx, createTask, refresh, confirmCreate])
+  }, [ta.query, ta.categoryIdx, ta.selectedTags, createTask, refresh, confirmCreate])
 
   const handleOpenTask = useCallback(() => {
     if (!selectedResult) return
@@ -69,7 +73,7 @@ export function TypeAheadInput({ onClose }: TypeAheadInputProps) {
   }, [selectedResult, setState])
 
   const handleQuickAction = useCallback(
-    async (action: 's' | 'p' | 'c' | 't') => {
+    async (action: 's' | 'p' | 'c') => {
       if (!selectedResult) return
       const id = selectedResult.task.id
       switch (action) {
@@ -82,14 +86,11 @@ export function TypeAheadInput({ onClose }: TypeAheadInputProps) {
         case 'c':
           await setStatus(id, 'completed')
           break
-        case 't':
-          await touchTask(id)
-          break
       }
       // Re-run search to update results in-place
       setQuery(ta.query)
     },
-    [selectedResult, setStatus, touchTask, setQuery, ta.query],
+    [selectedResult, setStatus, setQuery, ta.query],
   )
 
   // Panel border (full terminal width)
@@ -117,6 +118,8 @@ export function TypeAheadInput({ onClose }: TypeAheadInputProps) {
   }
 
   if (ta.mode === 'creating') {
+    const inCategoryRow = ta.createFocusRow === 'category'
+    const inTagsRow = ta.createFocusRow === 'tags'
     return (
       <Box flexDirection="column" marginBottom={1}>
         <Text>{topLine}</Text>
@@ -125,8 +128,11 @@ export function TypeAheadInput({ onClose }: TypeAheadInputProps) {
             {colors.accent('+')} {colors.primary(ta.query)}
           </Text>
         </Box>
+
+        {/* Category row */}
         <Box paddingLeft={2} paddingRight={2} marginTop={1}>
-          <Text>{colors.muted('Category:  ')}</Text>
+          <Text>{inCategoryRow ? colors.accent('\u25b8 ') : '  '}</Text>
+          <Text>{colors.muted('Category: ')}</Text>
           {DEFAULT_CATEGORIES.map((cat, i) => (
             <Text key={cat.name}>
               {i === ta.categoryIdx
@@ -136,13 +142,44 @@ export function TypeAheadInput({ onClose }: TypeAheadInputProps) {
             </Text>
           ))}
         </Box>
+
+        {/* Tags row */}
         <Box paddingLeft={2} paddingRight={2} marginTop={1}>
-          <Text>{colors.dim('\u2190\u2192:category \u00b7 Enter:create \u00b7 Esc:back')}</Text>
+          <Text>{inTagsRow ? colors.accent('\u25b8 ') : '  '}</Text>
+          <Text>{colors.muted('Tags:     ')}</Text>
+          {DEFAULT_TAGS.map((tag, i) => {
+            const isSelected = ta.selectedTags.includes(tag.name)
+            const isFocused = inTagsRow && i === ta.tagFocusIdx
+            const label = isSelected ? '[' + tag.name + ']' : tag.name
+            return (
+              <Text key={tag.name}>
+                {isFocused
+                  ? tagColor(tag.name).bold(label)
+                  : isSelected
+                    ? tagColor(tag.name)(label)
+                    : colors.dim(tag.name)}
+                {i < DEFAULT_TAGS.length - 1 ? '  ' : ''}
+              </Text>
+            )
+          })}
+        </Box>
+
+        <Box paddingLeft={2} paddingRight={2} marginTop={1}>
+          <Text>
+            {inCategoryRow
+              ? colors.dim('\u2190\u2192:category \u00b7 \u2193:tags \u00b7 Enter:create \u00b7 Esc:back')
+              : colors.dim('\u2190\u2192:tag \u00b7 Space:toggle \u00b7 \u2191:category \u00b7 Enter:create \u00b7 Esc:back')}
+          </Text>
         </Box>
         <Text>{bottomLine}</Text>
         {isRawModeSupported && (
           <CreateModeKeys
-            onCycle={cycleCategory}
+            focusRow={ta.createFocusRow}
+            onCycleCategory={cycleCategory}
+            onFocusTagsRow={focusTagsRow}
+            onBackToCategoryRow={backToCategoryRow}
+            onCycleTagFocus={cycleTagFocus}
+            onToggleTag={toggleTag}
             onCreate={handleCreate}
             onBack={backToSearch}
           />
@@ -303,7 +340,7 @@ function SearchModeKeys({
   onStartCreate: () => void
   onOpen: () => void
   onClose: () => void
-  onQuickAction: (action: 's' | 'p' | 'c' | 't') => void
+  onQuickAction: (action: 's' | 'p' | 'c') => void
 }) {
   useInput((input, key) => {
     if (key.escape) {
@@ -352,25 +389,31 @@ function SearchModeKeys({
       onQuickAction('c')
       return
     }
-    if (input === 't') {
-      onQuickAction('t')
-      return
-    }
   })
 
   return null
 }
 
 function CreateModeKeys({
-  onCycle,
+  focusRow,
+  onCycleCategory,
+  onFocusTagsRow,
+  onBackToCategoryRow,
+  onCycleTagFocus,
+  onToggleTag,
   onCreate,
   onBack,
 }: {
-  onCycle: (delta: number) => void
+  focusRow: 'category' | 'tags'
+  onCycleCategory: (delta: number) => void
+  onFocusTagsRow: () => void
+  onBackToCategoryRow: () => void
+  onCycleTagFocus: (delta: number) => void
+  onToggleTag: () => void
   onCreate: () => void
   onBack: () => void
 }) {
-  useInput((_input, key) => {
+  useInput((input, key) => {
     if (key.escape) {
       onBack()
       return
@@ -379,13 +422,36 @@ function CreateModeKeys({
       onCreate()
       return
     }
-    if (key.leftArrow) {
-      onCycle(-1)
-      return
-    }
-    if (key.rightArrow) {
-      onCycle(1)
-      return
+    if (focusRow === 'category') {
+      if (key.leftArrow) {
+        onCycleCategory(-1)
+        return
+      }
+      if (key.rightArrow) {
+        onCycleCategory(1)
+        return
+      }
+      if (key.downArrow || key.tab) {
+        onFocusTagsRow()
+        return
+      }
+    } else {
+      if (key.leftArrow) {
+        onCycleTagFocus(-1)
+        return
+      }
+      if (key.rightArrow) {
+        onCycleTagFocus(1)
+        return
+      }
+      if (key.upArrow) {
+        onBackToCategoryRow()
+        return
+      }
+      if (input === ' ') {
+        onToggleTag()
+        return
+      }
     }
   })
 

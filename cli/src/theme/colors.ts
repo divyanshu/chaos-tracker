@@ -31,7 +31,6 @@ const CATEGORY_COLORS: Record<string, chalk.ChalkInstance> = {
   Admin: chalk.hex('#a8a29e'),       // Stone-400
   Flow: chalk.hex('#c4b5fd'),        // Pastel purple
   Completed: colors.completed,
-  'Top of Mind': colors.accent,
 }
 
 export const categoryColor = (name: string): chalk.ChalkInstance =>

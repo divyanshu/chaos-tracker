@@ -14,7 +14,7 @@ function KeyboardHandler({ flatTaskIds }: { flatTaskIds: string[] }) {
 }
 
 export function DashboardView() {
-  const { topOfMindGroup, regularCategories, completedGroup, flatTaskIds } = useTasks()
+  const { regularCategories, completedGroup, flatTaskIds } = useTasks()
   const selectedTaskId = useSelectedTask(flatTaskIds)
   const { isRawModeSupported } = useStdin()
   const { state, setState } = useContext(AppStateContext)
@@ -28,16 +28,6 @@ export function DashboardView() {
       <AsciiHeader />
       {isRawModeSupported && !state.typeaheadOpen && (
         <KeyboardHandler flatTaskIds={flatTaskIds} />
-      )}
-      {/* Top of Mind — view-only, no keyboard nav selection */}
-      {topOfMindGroup.tasks.length > 0 && (
-        <Box dimColor={state.typeaheadOpen}>
-          <CategoryGroup
-            category={topOfMindGroup.category}
-            tasks={topOfMindGroup.tasks}
-            selectedTaskId={null}
-          />
-        </Box>
       )}
       {/* Regular categories */}
       {regularCategories.map(({ category, tasks }) => (
